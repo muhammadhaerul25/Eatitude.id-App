@@ -1,6 +1,7 @@
 import { ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import {
+  Image,
   SafeAreaView,
   ScrollView,
   Text,
@@ -50,12 +51,16 @@ export default function OnboardingScreen() {
       <LoadingOverlay
         visible={isGeneratingPlan}
         title="Generating Your Personal Plan"
-        subtitle="AI is analyzing your profile and creating a personalized nutrition plan. This process may take up to 2 minutes."
+        subtitle="AI is analyzing your profile and creating a personalized nutrition plan. This process may take up to 5 minutes."
       />
 
       {/* Header */}
       <View style={onboardingStyles.header}>
-        <Text style={onboardingStyles.appName}>Eatitude</Text>
+        <Image
+          source={require('../assets/images/logo-no-bg-horizontal.png')}
+          style={onboardingStyles.appLogo}
+          resizeMode="contain"
+        />
         <Text style={onboardingStyles.welcomeText}>Let's personalize your experience</Text>
 
         {/* Progress Indicator */}

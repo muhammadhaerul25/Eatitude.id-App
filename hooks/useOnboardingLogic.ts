@@ -110,6 +110,14 @@ export const useOnboardingLogic = () => {
             await AsyncStorage.setItem('nutritionPlan', JSON.stringify(mappedPlan));
             console.log('💾 Plan saved successfully');
 
+            // Mark onboarding as completed
+            await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
+            await AsyncStorage.setItem('hasSeenWelcome', 'true');
+            console.log('✅ Onboarding marked as completed');
+
+            // Small delay to ensure AsyncStorage operations complete
+            await new Promise(resolve => setTimeout(resolve, 100));
+
             // Navigate to personal screen with plan ready
             router.replace('/(tabs)/personal');
         } catch (error) {

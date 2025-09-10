@@ -23,26 +23,20 @@ export default function WelcomeScreen() {
   return (
     <SafeAreaView style={welcomeStyles.container}>
       <View style={welcomeStyles.content}>
-        {/* Welcome Section */}
-        <View style={welcomeStyles.welcomeSection}>
-          <Text style={welcomeStyles.welcomeTitle}>Welcome</Text>
+      {/* Welcome Section */}
+      <View style={welcomeStyles.welcomeSection}>
+        <Image
+        source={require('../assets/images/logo-no-bg-vertical.png')}
+        style={[welcomeStyles.logo, { width: '80%', height: '80%', aspectRatio: undefined }]}
+        resizeMode="contain"
+        />
+      </View>
 
-          <Image
-            source={require('../assets/images/logo text tag vertical.png')}
-            style={welcomeStyles.logo}
-            resizeMode="contain"
-          />
-
-          <Text style={welcomeStyles.welcomeMessage}>
-            Your personalized nutrition journey starts here. Let's help you achieve your health goals with AI-powered meal planning and expert guidance.
-          </Text>
-        </View>
-
-        {/* Get Started Button */}
-        <TouchableOpacity style={welcomeStyles.getStartedButton} onPress={handleGetStarted}>
-          <Text style={welcomeStyles.getStartedText}>Get Started</Text>
-          <ChevronRight size={20} color="#FFFFFF" />
-        </TouchableOpacity>
+      {/* Get Started Button */}
+      <TouchableOpacity style={welcomeStyles.getStartedButton} onPress={handleGetStarted}>
+        <Text style={welcomeStyles.getStartedText}>Get Started</Text>
+        <ChevronRight size={20} color="#FFFFFF" />
+      </TouchableOpacity>
       </View>
     </SafeAreaView>
   );

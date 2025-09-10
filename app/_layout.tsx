@@ -1,14 +1,16 @@
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 export default function RootLayout() {
   useFrameworkReady();
   const [isLoading, setIsLoading] = useState(true);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const router = useRouter();
   const segments = useSegments();
 
@@ -16,8 +18,15 @@ export default function RootLayout() {
     checkOnboardingStatus();
   }, []);
 
+  // Re-check onboarding status when app comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      checkOnboardingStatus();
+    }, [])
+  );
+
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && !isNavigating) {
       const inTabsGroup = segments[0] === '(tabs)';
       const inWelcome = segments[0] === 'welcome';
       const inOnboarding = segments[0] === 'onboarding';
@@ -34,23 +43,34 @@ export default function RootLayout() {
       // If user completed onboarding, always go to main app
       if (hasCompletedOnboarding && !inTabsGroup && segments[0] !== '+not-found') {
         console.log('✅ Redirecting to tabs (onboarding completed)');
+        setIsNavigating(true);
         router.replace('/(tabs)');
+        setTimeout(() => setIsNavigating(false), 1000);
       } else if (!hasCompletedOnboarding && !hasSeenWelcome && !inWelcome && !inOnboarding && segments[0] !== '+not-found') {
         // Show welcome page for new users who haven't seen it
         console.log('👋 Redirecting to welcome (new user)');
+        setIsNavigating(true);
         router.replace('/welcome');
+        setTimeout(() => setIsNavigating(false), 1000);
       } else if (!hasCompletedOnboarding && hasSeenWelcome && !inOnboarding && !inWelcome && segments[0] !== '+not-found') {
         // Show onboarding for users who have seen welcome but not completed onboarding
         console.log('📝 Redirecting to onboarding');
+        setIsNavigating(true);
         router.replace('/onboarding');
+        setTimeout(() => setIsNavigating(false), 1000);
       }
     }
-  }, [hasCompletedOnboarding, hasSeenWelcome, isLoading, segments]);
+  }, [hasCompletedOnboarding, hasSeenWelcome, isLoading, segments, isNavigating]);
 
   const checkOnboardingStatus = async () => {
     try {
       const completed = await AsyncStorage.getItem('hasCompletedOnboarding');
       const welcomeShown = await AsyncStorage.getItem('hasSeenWelcome');
+
+      console.log('📱 Checking onboarding status:', {
+        completed: completed === 'true',
+        welcomeShown: welcomeShown === 'true'
+      });
 
       setHasCompletedOnboarding(completed === 'true');
       setHasSeenWelcome(welcomeShown === 'true');

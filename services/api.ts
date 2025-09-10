@@ -57,7 +57,7 @@ class ApiService {
     private async request<T>(
         endpoint: string,
         options: RequestInit = {},
-        timeout: number = 60000
+        timeout: number = 300000
     ): Promise<T> {
         const url = `${API_BASE_URL}${endpoint}`;
 
@@ -180,7 +180,7 @@ class ApiService {
     // Generate personal plan with correct request structure for FastAPI
     async generatePersonalPlan(userData: UserData): Promise<PersonalPlan> {
         console.log('📋 Sending user data directly to FastAPI:', userData);
-        console.log('⏱️ Using extended timeout for personal plan generation (120 seconds)');
+        console.log('⏱️ Using extended timeout for personal plan generation (300 seconds)');
 
         // FastAPI expects UserData directly in the request body, not wrapped
         // Use longer timeout for personal plan generation as it involves AI processing

@@ -19,6 +19,12 @@ export const onboardingStyles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 8,
     },
+    appLogo: {
+        height: 40,
+        width: 200,
+        alignSelf: 'center',
+        marginBottom: 8,
+    },
     welcomeText: {
         fontSize: 16,
         color: '#6B7280',
