@@ -9,11 +9,11 @@ import React, { useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from 'react-native';
+import { progressTabStyles } from '../../styles/tabs/progressStyles';
 
 export default function ProgressScreen() {
   const [selectedPeriod, setSelectedPeriod] = useState<'day' | 'week' | 'month'>('day');
@@ -77,44 +77,44 @@ export default function ProgressScreen() {
     const percentage = Math.min(getProgressPercentage(current, target), 100);
 
     return (
-      <View style={styles.progressBarContainer}>
-        <View style={styles.progressBarBackground}>
+      <View style={progressTabStyles.progressBarContainer}>
+        <View style={progressTabStyles.progressBarBackground}>
           <View
             style={[
-              styles.progressBarFill,
+              progressTabStyles.progressBarFill,
               { width: `${percentage}%`, backgroundColor: color }
             ]}
           />
         </View>
-        <Text style={styles.progressText}>{percentage.toFixed(0)}%</Text>
+        <Text style={progressTabStyles.progressText}>{percentage.toFixed(0)}%</Text>
       </View>
     );
   };
 
   const StatusIndicator = ({ status, color }: { status: string, color: string }) => (
-    <View style={[styles.statusIndicator, { backgroundColor: color }]}>
-      <Text style={styles.statusText}>{status}</Text>
+    <View style={[progressTabStyles.statusIndicator, { backgroundColor: color }]}>
+      <Text style={progressTabStyles.statusText}>{status}</Text>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={progressTabStyles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Progress Tracking</Text>
-        <View style={styles.periodSelector}>
+      <View style={progressTabStyles.header}>
+        <Text style={progressTabStyles.headerTitle}>Progress Tracking</Text>
+        <View style={progressTabStyles.periodSelector}>
           {['day', 'week', 'month'].map((period) => (
             <TouchableOpacity
               key={period}
               style={[
-                styles.periodButton,
-                selectedPeriod === period && styles.periodButtonActive
+                progressTabStyles.periodButton,
+                selectedPeriod === period && progressTabStyles.periodButtonActive
               ]}
               onPress={() => setSelectedPeriod(period as any)}
             >
               <Text style={[
-                styles.periodButtonText,
-                selectedPeriod === period && styles.periodButtonTextActive
+                progressTabStyles.periodButtonText,
+                selectedPeriod === period && progressTabStyles.periodButtonTextActive
               ]}>
                 {period.charAt(0).toUpperCase() + period.slice(1)}
               </Text>
@@ -123,16 +123,16 @@ export default function ProgressScreen() {
         </View>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={progressTabStyles.content} showsVerticalScrollIndicator={false}>
         {/* Calorie Target Card */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Target Kalori</Text>
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
+        <View style={progressTabStyles.section}>
+          <Text style={progressTabStyles.sectionTitle}>Target Kalori</Text>
+          <View style={progressTabStyles.card}>
+            <View style={progressTabStyles.cardHeader}>
               <Target size={24} color="#10B981" />
-              <View style={styles.cardHeaderText}>
-                <Text style={styles.cardTitle}>Kalori</Text>
-                <Text style={styles.cardSubtitle}>
+              <View style={progressTabStyles.cardHeaderText}>
+                <Text style={progressTabStyles.cardTitle}>Kalori</Text>
+                <Text style={progressTabStyles.cardSubtitle}>
                   {dailyTargets.calories.current} kcal / {dailyTargets.calories.target} kcal
                 </Text>
               </View>
@@ -146,13 +146,13 @@ export default function ProgressScreen() {
         </View>
 
         {/* Macronutrients Card */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Target Makronutrisi</Text>
-          <View style={styles.card}>
-            <View style={styles.macroRow}>
-              <View style={styles.macroItem}>
-                <Text style={styles.macroLabel}>Karbohidrat</Text>
-                <Text style={styles.macroValue}>
+        <View style={progressTabStyles.section}>
+          <Text style={progressTabStyles.sectionTitle}>Target Makronutrisi</Text>
+          <View style={progressTabStyles.card}>
+            <View style={progressTabStyles.macroRow}>
+              <View style={progressTabStyles.macroItem}>
+                <Text style={progressTabStyles.macroLabel}>Karbohidrat</Text>
+                <Text style={progressTabStyles.macroValue}>
                   {dailyTargets.macros.carbs.current} g / {dailyTargets.macros.carbs.target} g
                 </Text>
                 <ProgressBar
@@ -162,10 +162,10 @@ export default function ProgressScreen() {
                 />
               </View>
             </View>
-            <View style={styles.macroRow}>
-              <View style={styles.macroItem}>
-                <Text style={styles.macroLabel}>Protein</Text>
-                <Text style={styles.macroValue}>
+            <View style={progressTabStyles.macroRow}>
+              <View style={progressTabStyles.macroItem}>
+                <Text style={progressTabStyles.macroLabel}>Protein</Text>
+                <Text style={progressTabStyles.macroValue}>
                   {dailyTargets.macros.protein.current} g / {dailyTargets.macros.protein.target} g
                 </Text>
                 <ProgressBar
@@ -175,10 +175,10 @@ export default function ProgressScreen() {
                 />
               </View>
             </View>
-            <View style={styles.macroRow}>
-              <View style={styles.macroItem}>
-                <Text style={styles.macroLabel}>Lemak</Text>
-                <Text style={styles.macroValue}>
+            <View style={progressTabStyles.macroRow}>
+              <View style={progressTabStyles.macroItem}>
+                <Text style={progressTabStyles.macroLabel}>Lemak</Text>
+                <Text style={progressTabStyles.macroValue}>
                   {dailyTargets.macros.fat.current} g / {dailyTargets.macros.fat.target} g
                 </Text>
                 <ProgressBar
@@ -188,10 +188,10 @@ export default function ProgressScreen() {
                 />
               </View>
             </View>
-            <View style={styles.macroRow}>
-              <View style={styles.macroItem}>
-                <Text style={styles.macroLabel}>Serat</Text>
-                <Text style={styles.macroValue}>
+            <View style={progressTabStyles.macroRow}>
+              <View style={progressTabStyles.macroItem}>
+                <Text style={progressTabStyles.macroLabel}>Serat</Text>
+                <Text style={progressTabStyles.macroValue}>
                   {dailyTargets.macros.fiber.current} g / {dailyTargets.macros.fiber.target} g
                 </Text>
                 <ProgressBar
@@ -205,11 +205,11 @@ export default function ProgressScreen() {
         </View>
 
         {/* Micronutrient Status Card */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Status Mikronutrisi</Text>
-          <View style={styles.card}>
+        <View style={progressTabStyles.section}>
+          <Text style={progressTabStyles.sectionTitle}>Status Mikronutrisi</Text>
+          <View style={progressTabStyles.card}>
             {/* Vitamins */}
-            <Text style={styles.subSectionTitle}>Vitamin</Text>
+            <Text style={progressTabStyles.subSectionTitle}>Vitamin</Text>
             {Object.entries(dailyTargets.vitamins).map(([vitamin, data]) => {
               const status = getMicronutrientStatus(data.current, data.target);
               const IconComponent = status.icon;
@@ -222,15 +222,15 @@ export default function ProgressScreen() {
                 vitaminK: 'Vitamin K',
               };
               return (
-                <View key={vitamin} style={styles.microRow}>
-                  <View style={styles.microInfo}>
-                    <Text style={styles.microLabel}>
+                <View key={vitamin} style={progressTabStyles.microRow}>
+                  <View style={progressTabStyles.microInfo}>
+                    <Text style={progressTabStyles.microLabel}>
                       {vitaminLabels[vitamin as keyof typeof vitaminLabels]}
                     </Text>
                   </View>
-                  <View style={styles.microStatus}>
+                  <View style={progressTabStyles.microStatus}>
                     <IconComponent size={16} color={status.color} />
-                    <Text style={[styles.microStatusText, { color: status.color }]}>
+                    <Text style={[progressTabStyles.microStatusText, { color: status.color }]}>
                       ({status.status})
                     </Text>
                   </View>
@@ -239,7 +239,7 @@ export default function ProgressScreen() {
             })}
 
             {/* Minerals */}
-            <Text style={[styles.subSectionTitle, { marginTop: 16 }]}>Mineral</Text>
+            <Text style={[progressTabStyles.subSectionTitle, { marginTop: 16 }]}>Mineral</Text>
             {Object.entries(dailyTargets.minerals).map(([mineral, data]) => {
               const status = getMicronutrientStatus(data.current, data.target);
               const IconComponent = status.icon;
@@ -253,15 +253,15 @@ export default function ProgressScreen() {
                 iodine: 'Yodium',
               };
               return (
-                <View key={mineral} style={styles.microRow}>
-                  <View style={styles.microInfo}>
-                    <Text style={styles.microLabel}>
+                <View key={mineral} style={progressTabStyles.microRow}>
+                  <View style={progressTabStyles.microInfo}>
+                    <Text style={progressTabStyles.microLabel}>
                       {mineralLabels[mineral as keyof typeof mineralLabels]}
                     </Text>
                   </View>
-                  <View style={styles.microStatus}>
+                  <View style={progressTabStyles.microStatus}>
                     <IconComponent size={16} color={status.color} />
-                    <Text style={[styles.microStatusText, { color: status.color }]}>
+                    <Text style={[progressTabStyles.microStatusText, { color: status.color }]}>
                       ({status.status})
                     </Text>
                   </View>
@@ -270,26 +270,26 @@ export default function ProgressScreen() {
             })}
 
             {/* Indicator Legend */}
-            <View style={styles.indicatorLegend}>
-              <Text style={styles.indicatorTitle}>Indikator</Text>
-              <Text style={styles.indicatorText}>
-                <Text style={[styles.indicatorLabel, { color: '#EF4444' }]}>Kurang</Text> → &lt; 80% kebutuhan harian
+            <View style={progressTabStyles.indicatorLegend}>
+              <Text style={progressTabStyles.indicatorTitle}>Indikator</Text>
+              <Text style={progressTabStyles.indicatorText}>
+                <Text style={[progressTabStyles.indicatorLabel, { color: '#EF4444' }]}>Kurang</Text> → &lt; 80% kebutuhan harian
               </Text>
-              <Text style={styles.indicatorText}>
-                <Text style={[styles.indicatorLabel, { color: '#10B981' }]}>Cukup</Text> → 80% – 120% kebutuhan harian
+              <Text style={progressTabStyles.indicatorText}>
+                <Text style={[progressTabStyles.indicatorLabel, { color: '#10B981' }]}>Cukup</Text> → 80% – 120% kebutuhan harian
               </Text>
-              <Text style={styles.indicatorText}>
-                <Text style={[styles.indicatorLabel, { color: '#F59E0B' }]}>Berlebih</Text> → &gt; 120% kebutuhan harian
+              <Text style={progressTabStyles.indicatorText}>
+                <Text style={[progressTabStyles.indicatorLabel, { color: '#F59E0B' }]}>Berlebih</Text> → &gt; 120% kebutuhan harian
               </Text>
             </View>
           </View>
         </View>
 
         {/* Consumption Limits Card */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Batas Konsumsi</Text>
-          <View style={styles.card}>
-            <Text style={styles.subSectionTitle}>Batas Konsumsi</Text>
+        <View style={progressTabStyles.section}>
+          <Text style={progressTabStyles.sectionTitle}>Batas Konsumsi</Text>
+          <View style={progressTabStyles.card}>
+            <Text style={progressTabStyles.subSectionTitle}>Batas Konsumsi</Text>
             {Object.entries(dailyTargets.limits).map(([limit, data]) => {
               const status = getLimitStatus(data.current, data.target);
               const limitLabels = {
@@ -302,15 +302,15 @@ export default function ProgressScreen() {
               };
 
               return (
-                <View key={limit} style={styles.limitRow}>
-                  <View style={styles.limitInfo}>
-                    <Text style={styles.limitLabel}>
+                <View key={limit} style={progressTabStyles.limitRow}>
+                  <View style={progressTabStyles.limitInfo}>
+                    <Text style={progressTabStyles.limitLabel}>
                       {limitLabels[limit as keyof typeof limitLabels]}
                     </Text>
                   </View>
-                  <View style={[styles.limitAlert, { backgroundColor: status.bgColor }]}>
+                  <View style={[progressTabStyles.limitAlert, { backgroundColor: status.bgColor }]}>
                     <AlertTriangle size={16} color={status.color} />
-                    <Text style={[styles.limitStatus, { color: status.color }]}>
+                    <Text style={[progressTabStyles.limitStatus, { color: status.color }]}>
                       ({status.status})
                     </Text>
                   </View>
@@ -319,41 +319,41 @@ export default function ProgressScreen() {
             })}
 
             {/* Alert Legend */}
-            <View style={styles.alertLegend}>
-              <Text style={styles.indicatorTitle}>Alert</Text>
-              <Text style={styles.indicatorText}>
-                <Text style={[styles.indicatorLabel, { color: '#10B981' }]}>Aman</Text> → &lt; 70% dari batas maksimal
+            <View style={progressTabStyles.alertLegend}>
+              <Text style={progressTabStyles.indicatorTitle}>Alert</Text>
+              <Text style={progressTabStyles.indicatorText}>
+                <Text style={[progressTabStyles.indicatorLabel, { color: '#10B981' }]}>Aman</Text> → &lt; 70% dari batas maksimal
               </Text>
-              <Text style={styles.indicatorText}>
-                <Text style={[styles.indicatorLabel, { color: '#F59E0B' }]}>Waspada</Text> → 70% – 100% dari batas maksimal
+              <Text style={progressTabStyles.indicatorText}>
+                <Text style={[progressTabStyles.indicatorLabel, { color: '#F59E0B' }]}>Waspada</Text> → 70% – 100% dari batas maksimal
               </Text>
-              <Text style={styles.indicatorText}>
-                <Text style={[styles.indicatorLabel, { color: '#EF4444' }]}>Bahaya</Text> → &gt; 100% dari batas maksimal
+              <Text style={progressTabStyles.indicatorText}>
+                <Text style={[progressTabStyles.indicatorLabel, { color: '#EF4444' }]}>Bahaya</Text> → &gt; 100% dari batas maksimal
               </Text>
             </View>
           </View>
         </View>
 
         {/* Hydration Card */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Asupan Cairan</Text>
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
+        <View style={progressTabStyles.section}>
+          <Text style={progressTabStyles.sectionTitle}>Asupan Cairan</Text>
+          <View style={progressTabStyles.card}>
+            <View style={progressTabStyles.cardHeader}>
               <Droplet size={24} color="#3B82F6" />
-              <View style={styles.cardHeaderText}>
-                <Text style={styles.cardTitle}>Asupan Air</Text>
-                <Text style={styles.cardSubtitle}>
+              <View style={progressTabStyles.cardHeaderText}>
+                <Text style={progressTabStyles.cardTitle}>Asupan Air</Text>
+                <Text style={progressTabStyles.cardSubtitle}>
                   {dailyTargets.hydration.current} gelas / {dailyTargets.hydration.target} gelas
                 </Text>
               </View>
             </View>
-            <View style={styles.hydrationVisual}>
+            <View style={progressTabStyles.hydrationVisual}>
               {Array.from({ length: dailyTargets.hydration.target }, (_, index) => (
                 <View
                   key={index}
                   style={[
-                    styles.waterGlass,
-                    index < dailyTargets.hydration.current && styles.waterGlassFilled
+                    progressTabStyles.waterGlass,
+                    index < dailyTargets.hydration.current && progressTabStyles.waterGlassFilled
                   ]}
                 >
                   <Droplet
@@ -366,259 +366,8 @@ export default function ProgressScreen() {
           </View>
         </View>
 
-        <View style={styles.bottomSpacing} />
+        <View style={progressTabStyles.bottomSpacing} />
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 12,
-  },
-  periodSelector: {
-    flexDirection: 'row',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    padding: 4,
-  },
-  periodButton: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: 6,
-  },
-  periodButtonActive: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  periodButtonText: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  periodButtonTextActive: {
-    color: '#111827',
-    fontWeight: '600',
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  section: {
-    marginTop: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 16,
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 12,
-  },
-  cardHeaderText: {
-    flex: 1,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  cardSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  progressBarContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  progressBarBackground: {
-    flex: 1,
-    height: 8,
-    backgroundColor: '#E5E7EB',
-    borderRadius: 4,
-  },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  progressText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6B7280',
-    minWidth: 35,
-  },
-  statusIndicator: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  macroRow: {
-    marginBottom: 16,
-  },
-  macroItem: {
-    gap: 8,
-  },
-  macroLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-  },
-  macroValue: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  subSectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 12,
-  },
-  microRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  microInfo: {
-    flex: 1,
-  },
-  microLabel: {
-    fontSize: 14,
-    color: '#374151',
-  },
-  microValue: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  microStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  microStatusText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  limitRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  limitInfo: {
-    flex: 1,
-  },
-  limitLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-  },
-  limitValue: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  limitAlert: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    gap: 4,
-  },
-  limitStatus: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  hydrationVisual: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 8,
-  },
-  waterGlass: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  waterGlassFilled: {
-    backgroundColor: '#DBEAFE',
-  },
-  bottomSpacing: {
-    height: 24,
-  },
-  indicatorLegend: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
-  alertLegend: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
-  indicatorTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
-  },
-  indicatorText: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginBottom: 4,
-  },
-  indicatorLabel: {
-    fontWeight: '600',
-  },
-});

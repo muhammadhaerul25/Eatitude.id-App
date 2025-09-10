@@ -1,11 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
-import { NutritionPlan, UserProfile } from './types';
+import { apiService } from '../services/api';
+import { mapPersonalPlanToNutritionPlan, mapUserProfileToApiData } from '../services/dataMapper';
+import { UserProfile } from './onboardingTypes';
+import { NutritionPlan } from './types';
 
 export const usePersonalLogic = () => {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [nutritionPlan, setNutritionPlan] = useState<NutritionPlan | null>(null);
+    const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
 
     useEffect(() => {
         loadProfile();
@@ -29,6 +33,14 @@ export const usePersonalLogic = () => {
             if (planData) {
                 setNutritionPlan(JSON.parse(planData));
             } else {
+                // Only generate sample plan if no plan exists
+                // This prevents overriding plans generated during onboarding
+                const profileData = await AsyncStorage.getItem('userProfile');
+                if (profileData) {
+                    // If user profile exists but no plan, they might have just completed onboarding
+                    // Give them the option to generate a plan
+                    return;
+                }
                 generateSamplePlan();
             }
         } catch (error) {
@@ -84,6 +96,39 @@ export const usePersonalLogic = () => {
         AsyncStorage.setItem('nutritionPlan', JSON.stringify(samplePlan));
     };
 
+    const generateNutritionPlan = async () => {
+        if (!profile) {
+            Alert.alert('Error', 'Profil pengguna tidak ditemukan. Silakan lengkapi profil terlebih dahulu.');
+            return;
+        }
+
+        // Check if profile is complete
+        if (!profile.name || !profile.age || !profile.weight || !profile.height ||
+            !profile.gender || !profile.activityLevel || !profile.goal) {
+            Alert.alert('Profil Tidak Lengkap', 'Silakan lengkapi semua data profil untuk menghasilkan rencana nutrisi.');
+            return;
+        }
+
+        setIsGeneratingPlan(true);
+        try {
+            const userData = mapUserProfileToApiData(profile);
+            const apiPlan = await apiService.generatePersonalPlan(userData);
+            const mappedPlan = mapPersonalPlanToNutritionPlan(apiPlan);
+
+            setNutritionPlan(mappedPlan);
+            await AsyncStorage.setItem('nutritionPlan', JSON.stringify(mappedPlan));
+
+            Alert.alert('Berhasil', 'Rencana nutrisi personal telah dibuat!');
+        } catch (error) {
+            console.error('Error generating nutrition plan:', error);
+            Alert.alert('Error', 'Gagal membuat rencana nutrisi. Silakan coba lagi.');
+            // Fall back to sample plan if API fails
+            generateSamplePlan();
+        } finally {
+            setIsGeneratingPlan(false);
+        }
+    };
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'waiting': return '#F59E0B';
@@ -126,14 +171,21 @@ export const usePersonalLogic = () => {
             let wakeTotalMin = wakeHour * 60 + wakeMin;
             let sleepTotalMin = sleepHour * 60 + sleepMin;
 
-            // If sleep time is later than wake time, it's the next day
+            // Sleep duration = wake time - sleep time
+            // But if sleep time > wake time, sleep was the previous day
+            let sleepDurationMin;
+
             if (sleepTotalMin > wakeTotalMin) {
-                sleepTotalMin += 24 * 60; // Add 24 hours
+                // Sleep time is later in the day than wake time
+                // This means sleep was previous day: (24 hours - sleep time) + wake time
+                sleepDurationMin = (24 * 60) - sleepTotalMin + wakeTotalMin;
+            } else {
+                // Wake time is later than sleep time (same day scenario, like naps)
+                sleepDurationMin = wakeTotalMin - sleepTotalMin;
             }
 
-            const diffMin = wakeTotalMin + (24 * 60) - sleepTotalMin;
-            const hours = Math.floor(diffMin / 60);
-            const minutes = diffMin % 60;
+            const hours = Math.floor(sleepDurationMin / 60);
+            const minutes = sleepDurationMin % 60;
 
             return `${hours} jam ${minutes} menit`;
         }
@@ -165,6 +217,8 @@ export const usePersonalLogic = () => {
     return {
         profile,
         nutritionPlan,
+        isGeneratingPlan,
+        generateNutritionPlan,
         getStatusColor,
         getStatusText,
         getBMI,

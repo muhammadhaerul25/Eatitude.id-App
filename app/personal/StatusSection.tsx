@@ -1,8 +1,8 @@
 import { AlertTriangle } from 'lucide-react-native';
 import React from 'react';
 import { Text, View } from 'react-native';
-import { personalStyles } from './styles';
-import { NutritionPlan } from './types';
+import { NutritionPlan } from '../../hooks/types';
+import { personalStyles } from '../../styles/tabs/personalStyles';
 
 interface StatusSectionProps {
     nutritionPlan: NutritionPlan;
@@ -48,3 +48,5 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
         </View>
     );
 };
+
+export default StatusSection;

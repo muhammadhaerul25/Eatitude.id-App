@@ -81,3 +81,20 @@ export const goalOptions = [
     { key: 'gain_weight', label: 'Gain Weight', description: 'Increase body weight healthily' },
     { key: 'manage_disease', label: 'Manage Disease', description: 'Support medical condition management' }
 ];
+
+// Label mappings for display purposes
+export const activityLevelLabels: { [key: string]: string } = {
+    'sedentary': 'Sedentary',
+    'light': 'Light Activity',
+    'moderate': 'Moderate Activity',
+    'active': 'Active',
+    'very_active': 'Very Active'
+};
+
+export const goalLabels: { [key: string]: string } = {
+    'improve_health': 'Improve Health',
+    'maintain_weight': 'Maintain Weight',
+    'lose_weight': 'Lose Weight',
+    'gain_weight': 'Gain Weight',
+    'manage_disease': 'Manage Disease'
+};

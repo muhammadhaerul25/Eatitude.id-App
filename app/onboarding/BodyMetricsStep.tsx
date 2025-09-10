@@ -1,9 +1,9 @@
 import { Scale } from 'lucide-react-native';
 import React from 'react';
 import { Text, View } from 'react-native';
-import { NumberInput } from './components/NumberInput';
-import { onboardingStyles as styles } from './styles';
-import { UserProfile } from './types';
+import { NumberInput } from '../../components/NumberInput';
+import { UserProfile } from '../../hooks/onboardingTypes';
+import { onboardingStyles as styles } from '../../styles/tabs/onboardingStyles';
 
 interface BodyMetricsStepProps {
     profile: UserProfile;
@@ -83,3 +83,5 @@ export const BodyMetricsStep: React.FC<BodyMetricsStepProps> = ({ profile, updat
         </View>
     );
 };
+
+export default BodyMetricsStep;

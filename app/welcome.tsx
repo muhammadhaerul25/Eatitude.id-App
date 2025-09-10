@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import { Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
-import { welcomeStyles } from './welcome/styles';
+import { welcomeStyles } from '../styles/tabs/welcomeStyles';
 
 export default function WelcomeScreen() {
   const router = useRouter();

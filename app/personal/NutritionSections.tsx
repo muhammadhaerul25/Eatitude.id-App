@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import { personalStyles } from './styles';
-import { NutritionPlan } from './types';
+import { NutritionPlan } from '../../hooks/types';
+import { personalStyles } from '../../styles/tabs/personalStyles';
 
 interface NutritionSectionsProps {
     nutritionPlan: NutritionPlan;
@@ -167,3 +167,5 @@ export const NutritionSections: React.FC<NutritionSectionsProps> = ({ nutritionP
         </>
     );
 };
+
+export default NutritionSections;

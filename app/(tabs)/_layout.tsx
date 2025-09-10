@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { ChartBar as BarChart3, Calendar, MessageCircle, User } from 'lucide-react-native';
+import React from 'react';
 
 export default function TabLayout() {
   return (

@@ -1,8 +1,8 @@
 import { Check, Heart } from 'lucide-react-native';
 import React from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { onboardingStyles as styles } from './styles';
-import { UserProfile, goalOptions } from './types';
+import { UserProfile, goalOptions } from '../../hooks/onboardingTypes';
+import { onboardingStyles as styles } from '../../styles/tabs/onboardingStyles';
 
 interface GoalsObjectivesStepProps {
     profile: UserProfile;
@@ -27,7 +27,7 @@ export const GoalsObjectivesStep: React.FC<GoalsObjectivesStepProps> = ({
                 </Text>
                 <Text style={styles.inputSubLabel}>Choose one that best describes your main objective:</Text>
                 <View style={styles.goalsGrid}>
-                    {goalOptions.map((goalOption) => (
+                    {goalOptions.map((goalOption: { key: string; label: string; description: string }) => (
                         <TouchableOpacity
                             key={goalOption.key}
                             style={[
@@ -90,3 +90,5 @@ export const GoalsObjectivesStep: React.FC<GoalsObjectivesStepProps> = ({
         </View>
     );
 };
+
+export default GoalsObjectivesStep;

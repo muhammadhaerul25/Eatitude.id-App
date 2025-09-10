@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
-import { onboardingStyles as styles } from '../styles';
+import { onboardingStyles as styles } from '../styles/tabs/onboardingStyles';
 
 interface NumberInputProps {
     label: string;

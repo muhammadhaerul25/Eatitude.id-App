@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import { personalStyles } from './styles';
-import { UserProfile, activityLevelLabels, goalLabels } from './types';
+import { UserProfile, activityLevelLabels, goalLabels } from '../../hooks/onboardingTypes';
+import { personalStyles } from '../../styles/tabs/personalStyles';
 
 interface ProfileSectionProps {
     profile: UserProfile;
@@ -111,3 +111,5 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
         </View>
     );
 };
+
+export default ProfileSection;

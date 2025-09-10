@@ -1,8 +1,8 @@
 import { Clock } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
-import { onboardingStyles as styles } from '../styles';
-import { validateTime } from '../types';
+import { validateTime } from '../hooks/onboardingTypes';
+import { onboardingStyles as styles } from '../styles/tabs/onboardingStyles';
 
 interface TimeInputProps {
     label: string;
@@ -61,9 +61,9 @@ export const TimeInput: React.FC<TimeInputProps> = ({
                 styles.timeInputContainer,
                 error ? styles.timeInputError : undefined
             ]}>
-                <Clock size={16} color="#6B7280" style={{ marginRight: 8 }} />
+                <Clock size={16} color="#6B7280" style={styles.timeInputIcon} />
                 <TextInput
-                    style={{ flex: 1, fontSize: 16, color: '#111827' }}
+                    style={styles.timeInputField}
                     value={value}
                     onChangeText={handleChangeText}
                     placeholder={placeholder}

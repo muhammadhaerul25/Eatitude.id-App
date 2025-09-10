@@ -11,11 +11,12 @@ import {
   Modal,
   SafeAreaView,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from 'react-native';
+import { useMealPlanner } from '../../hooks/tabs/useMealPlanner';
+import { indexTabStyles } from '../../styles/tabs/indexStyles';
 import NutritionScanner from '../components/NutritionScanner';
 
 interface MealItem {
@@ -29,60 +30,25 @@ interface MealItem {
 }
 
 export default function IndexScreen() {
-  const [selectedDate, setSelectedDate] = useState(new Date());
   const [showMealModal, setShowMealModal] = useState(false);
-  const [selectedMeal, setSelectedMeal] = useState<MealItem | null>(null);
+  const [selectedMeal, setSelectedMeal] = useState<any>(null);
   const [showNutritionScanner, setShowNutritionScanner] = useState(false);
+
+  const {
+    meals,
+    selectedDate,
+    setSelectedDate,
+    isGeneratingMealPlan,
+    generateMealPlan,
+    updateMealStatus,
+    getTotalCalories,
+    getCompletedCalories,
+  } = useMealPlanner();
 
   const currentTime = new Date().toLocaleTimeString('id-ID', {
     hour: '2-digit',
     minute: '2-digit'
   });
-
-  const mockMeals: MealItem[] = [
-    {
-      id: '1',
-      type: 'sarapan',
-      timeRange: '06:00 - 08:00',
-      rekomendasi_menu: 'Get Recommendation',
-      targetKalori: 400,
-      status: 'not_planned',
-    },
-    {
-      id: '2',
-      type: 'snack_pagi',
-      timeRange: '09:30 - 10:30',
-      rekomendasi_menu: 'Get Recommendation',
-      targetKalori: 150,
-      status: 'upcoming',
-      isOptional: true,
-    },
-    {
-      id: '3',
-      type: 'makan_siang',
-      timeRange: '12:00 - 14:00',
-      rekomendasi_menu: 'Get Recommendation',
-      targetKalori: 500,
-      status: 'upcoming',
-    },
-    {
-      id: '4',
-      type: 'snack_sore',
-      timeRange: '15:30 - 16:30',
-      rekomendasi_menu: 'Get Recommendation',
-      targetKalori: 150,
-      status: 'not_planned',
-      isOptional: true,
-    },
-    {
-      id: '5',
-      type: 'makan_malam',
-      timeRange: '18:00 - 20:00',
-      rekomendasi_menu: 'Get Recommendation',
-      targetKalori: 450,
-      status: 'not_planned',
-    },
-  ];
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('id-ID', {
@@ -203,40 +169,32 @@ export default function IndexScreen() {
     setShowMealModal(true);
   };
 
-  const updateMealStatus = (status: 'completed' | 'skipped') => {
-    if (selectedMeal) {
-      // Here you would typically update the meal status in your state management
-      // For now, we'll just close the modal
-      setShowMealModal(false);
-      // You could also show a success message
-      console.log(`Meal ${selectedMeal.type} marked as ${status}`);
-    }
-  };
+
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={indexTabStyles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Meal Planner</Text>
-        <View style={styles.timeContainer}>
+      <View style={indexTabStyles.header}>
+        <Text style={indexTabStyles.headerTitle}>Meal Planner</Text>
+        <View style={indexTabStyles.timeContainer}>
           <Clock size={16} color="#6B7280" />
-          <Text style={styles.currentTime}>{currentTime}</Text>
+          <Text style={indexTabStyles.currentTime}>{currentTime}</Text>
         </View>
       </View>
 
       {/* Date Navigation */}
-      <View style={styles.dateNavigation}>
+      <View style={indexTabStyles.dateNavigation}>
         <TouchableOpacity
-          style={styles.dateButton}
+          style={indexTabStyles.dateButton}
           onPress={() => navigateDate(-1)}
         >
           <ChevronLeft size={20} color="#6B7280" />
         </TouchableOpacity>
 
-        <Text style={styles.selectedDate}>{formatDate(selectedDate)}</Text>
+        <Text style={indexTabStyles.selectedDate}>{formatDate(selectedDate)}</Text>
 
         <TouchableOpacity
-          style={styles.dateButton}
+          style={indexTabStyles.dateButton}
           onPress={() => navigateDate(1)}
         >
           <ChevronRight size={20} color="#6B7280" />
@@ -244,60 +202,62 @@ export default function IndexScreen() {
       </View>
 
       {/* Reminders */}
-      <View style={styles.reminderContainer}>
+      <View style={indexTabStyles.reminderContainer}>
         <Bell size={16} color="#F59E0B" />
-        <Text style={styles.reminderText}>
+        <Text style={indexTabStyles.reminderText}>
           Next: Lunch in 2 hours • Don't forget to drink water!
         </Text>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={indexTabStyles.content} showsVerticalScrollIndicator={false}>
         {/* Menu Hari Ini */}
-        <Text style={styles.sectionTitle}>Menu Hari Ini</Text>
+        <View style={indexTabStyles.sectionHeader}>
+          <Text style={indexTabStyles.sectionTitle}>Menu Hari Ini</Text>
+        </View>
 
-        {mockMeals.map((meal) => (
+        {meals.map((meal) => (
           <TouchableOpacity
             key={meal.id}
             style={[
-              styles.mealCard,
-              meal.status === 'completed' && styles.mealCardCompleted,
-              meal.isOptional && styles.mealCardOptional
+              indexTabStyles.mealCard,
+              meal.status === 'completed' && indexTabStyles.mealCardCompleted,
+              meal.isOptional && indexTabStyles.mealCardOptional
             ]}
             onPress={() => openMealModal(meal)}
           >
-            <View style={styles.mealHeader}>
-              <View style={styles.mealInfo}>
-                <Text style={styles.mealIcon}>{getMealIcon(meal.type)}</Text>
-                <View style={styles.mealTextContainer}>
-                  <View style={styles.mealTitleRow}>
-                    <Text style={styles.mealType}>
+            <View style={indexTabStyles.mealHeader}>
+              <View style={indexTabStyles.mealInfo}>
+                <Text style={indexTabStyles.mealIcon}>{getMealIcon(meal.type)}</Text>
+                <View style={indexTabStyles.mealTextContainer}>
+                  <View style={indexTabStyles.mealTitleRow}>
+                    <Text style={indexTabStyles.mealType}>
                       {getMealTitle(meal.type)}
                     </Text>
                     {meal.isOptional && (
-                      <Text style={styles.optionalBadge}>Opsional</Text>
+                      <Text style={indexTabStyles.optionalBadge}>Opsional</Text>
                     )}
                   </View>
-                  <Text style={styles.mealTime}>{meal.timeRange}</Text>
+                  <Text style={indexTabStyles.mealTime}>{meal.timeRange}</Text>
                 </View>
               </View>
 
-              <View style={styles.mealDetails}>
+              <View style={indexTabStyles.mealDetails}>
                 <Text style={[
-                  styles.mealFood,
-                  meal.status === 'completed' && styles.completedText
+                  indexTabStyles.mealFood,
+                  meal.status === 'completed' && indexTabStyles.completedText
                 ]}>
                   {meal.rekomendasi_menu}
                 </Text>
-                <Text style={styles.mealCalories}>
+                <Text style={indexTabStyles.mealCalories}>
                   Target: {meal.targetKalori} kcal
                 </Text>
-                <View style={styles.statusContainer}>
+                <View style={indexTabStyles.statusContainer}>
                   <View style={[
-                    styles.statusIndicator,
+                    indexTabStyles.statusIndicator,
                     { backgroundColor: getStatusColor(meal.status) }
                   ]} />
                   <Text style={[
-                    styles.statusText,
+                    indexTabStyles.statusText,
                     { color: getStatusColor(meal.status) }
                   ]}>
                     {getStatusText(meal.status)}
@@ -309,15 +269,15 @@ export default function IndexScreen() {
         ))}
 
         {/* Quick Actions */}
-        <View style={styles.quickActions}>
-          <TouchableOpacity style={styles.actionButton}>
+        <View style={indexTabStyles.quickActions}>
+          <TouchableOpacity style={indexTabStyles.actionButton}>
             <Plus size={20} color="#FFFFFF" />
-            <Text style={styles.actionButtonText}>Add Meal</Text>
+            <Text style={indexTabStyles.actionButtonText}>Add Meal</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.actionButton, styles.scanButton]} onPress={() => setShowNutritionScanner(true)}>
+          <TouchableOpacity style={[indexTabStyles.actionButton, indexTabStyles.scanButton]} onPress={() => setShowNutritionScanner(true)}>
             <Scan size={20} color="#FFFFFF" />
-            <Text style={styles.actionButtonText}>Scan Food</Text>
+            <Text style={indexTabStyles.actionButtonText}>Scan Food</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -329,91 +289,101 @@ export default function IndexScreen() {
         presentationStyle="pageSheet"
         onRequestClose={() => setShowMealModal(false)}
       >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>
+        <SafeAreaView style={indexTabStyles.modalContainer}>
+          <View style={indexTabStyles.modalHeader}>
+            <Text style={indexTabStyles.modalTitle}>
               {getMealTitle(selectedMeal?.type || '')} Detail
             </Text>
             <TouchableOpacity onPress={() => setShowMealModal(false)}>
-              <Text style={styles.closeButton}>Done</Text>
+              <Text style={indexTabStyles.closeButton}>Done</Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+          <ScrollView style={indexTabStyles.modalContent} showsVerticalScrollIndicator={false}>
             {/* Meal Info Card */}
-            <View style={styles.mealInfoCard}>
-              <Text style={styles.mealDetailTitle}>Jenis Makanan</Text>
-              <Text style={styles.mealDetailValue}>{getMealTitle(selectedMeal?.type || '')}</Text>
+            <View style={indexTabStyles.mealInfoCard}>
+              <Text style={indexTabStyles.mealDetailTitle}>Jenis Makanan</Text>
+              <Text style={indexTabStyles.mealDetailValue}>{getMealTitle(selectedMeal?.type || '')}</Text>
 
-              <Text style={styles.mealDetailTitle}>Waktu</Text>
-              <Text style={styles.mealDetailValue}>{selectedMeal?.timeRange}</Text>
+              <Text style={indexTabStyles.mealDetailTitle}>Waktu</Text>
+              <Text style={indexTabStyles.mealDetailValue}>{selectedMeal?.timeRange}</Text>
 
-              <Text style={styles.mealDetailTitle}>Target Kalori</Text>
-              <Text style={styles.mealDetailCalories}>{selectedMeal?.targetKalori} kcal</Text>
+              <Text style={indexTabStyles.mealDetailTitle}>Target Kalori</Text>
+              <Text style={indexTabStyles.mealDetailCalories}>{selectedMeal?.targetKalori} kcal</Text>
             </View>
 
             {/* Rekomendasi Makanan */}
-            <View style={styles.recommendationCard}>
-              <Text style={styles.sectionTitle}>Rekomendasi Makanan</Text>
-              <Text style={styles.recommendationDescription}>
+            <View style={indexTabStyles.recommendationCard}>
+              <Text style={indexTabStyles.sectionTitle}>Rekomendasi Makanan</Text>
+              <Text style={indexTabStyles.recommendationDescription}>
                 {getMealRecommendation(selectedMeal?.type || '')}
               </Text>
             </View>
 
             {/* Pilihan Makanan */}
-            <View style={styles.foodChoicesCard}>
-              <Text style={styles.sectionTitle}>Pilihan Makanan</Text>
-              <View style={styles.foodChoicesList}>
+            <View style={indexTabStyles.foodChoicesCard}>
+              <Text style={indexTabStyles.sectionTitle}>Pilihan Makanan</Text>
+              <View style={indexTabStyles.foodChoicesList}>
                 {getFoodChoices(selectedMeal?.type || '').map((food, index) => (
-                  <TouchableOpacity key={index} style={styles.foodChoiceItem}>
-                    <Text style={styles.foodChoiceText}>{food.name}</Text>
-                    <Text style={styles.foodChoiceCalories}>{food.calories} kcal</Text>
+                  <TouchableOpacity key={index} style={indexTabStyles.foodChoiceItem}>
+                    <Text style={indexTabStyles.foodChoiceText}>{food.name}</Text>
+                    <Text style={indexTabStyles.foodChoiceCalories}>{food.calories} kcal</Text>
                   </TouchableOpacity>
                 ))}
               </View>
             </View>
 
             {/* Asupan Cairan */}
-            <View style={styles.fluidIntakeCard}>
-              <Text style={styles.sectionTitle}>Asupan Cairan</Text>
-              <View style={styles.fluidIntakeRow}>
-                <Text style={styles.fluidIntakeIcon}>💧</Text>
-                <Text style={styles.fluidIntakeText}>2 gelas air</Text>
-                <Text style={styles.fluidIntakeSubtext}>(400ml)</Text>
+            <View style={indexTabStyles.fluidIntakeCard}>
+              <Text style={indexTabStyles.sectionTitle}>Asupan Cairan</Text>
+              <View style={indexTabStyles.fluidIntakeRow}>
+                <Text style={indexTabStyles.fluidIntakeIcon}>💧</Text>
+                <Text style={indexTabStyles.fluidIntakeText}>2 gelas air</Text>
+                <Text style={indexTabStyles.fluidIntakeSubtext}>(400ml)</Text>
               </View>
             </View>
 
             {/* Action Buttons */}
-            <View style={styles.actionButtonsContainer}>
-              <TouchableOpacity style={styles.modalScanButton} onPress={() => setShowNutritionScanner(true)}>
+            <View style={indexTabStyles.actionButtonsContainer}>
+              <TouchableOpacity style={indexTabStyles.modalScanButton} onPress={() => setShowNutritionScanner(true)}>
                 <Scan size={20} color="#FFFFFF" />
-                <Text style={styles.modalScanButtonText}>Scan Food</Text>
+                <Text style={indexTabStyles.modalScanButtonText}>Scan Food</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.adjustButton}>
+              <TouchableOpacity style={indexTabStyles.adjustButton}>
                 <Plus size={20} color="#3B82F6" />
-                <Text style={styles.adjustButtonText}>Adjust Food</Text>
+                <Text style={indexTabStyles.adjustButtonText}>Adjust Food</Text>
               </TouchableOpacity>
             </View>
 
             {/* Status Action Buttons */}
-            <View style={styles.statusButtonsContainer}>
+            <View style={indexTabStyles.statusButtonsContainer}>
               <TouchableOpacity
-                style={styles.completedButton}
-                onPress={() => updateMealStatus('completed')}
+                style={indexTabStyles.completedButton}
+                onPress={() => {
+                  if (selectedMeal) {
+                    updateMealStatus(selectedMeal.id, 'completed');
+                    setShowMealModal(false);
+                  }
+                }}
               >
-                <Text style={styles.completedButtonText}>Completed</Text>
+                <Text style={indexTabStyles.completedButtonText}>Completed</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.skippedButton}
-                onPress={() => updateMealStatus('skipped')}
+                style={indexTabStyles.skippedButton}
+                onPress={() => {
+                  if (selectedMeal) {
+                    updateMealStatus(selectedMeal.id, 'skipped');
+                    setShowMealModal(false);
+                  }
+                }}
               >
-                <Text style={styles.skippedButtonText}>Skipped</Text>
+                <Text style={indexTabStyles.skippedButtonText}>Skipped</Text>
               </TouchableOpacity>
             </View>
 
-            <View style={styles.modalBottomSpacing} />
+            <View style={indexTabStyles.modalBottomSpacing} />
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -430,509 +400,3 @@ export default function IndexScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  timeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  currentTime: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  dateNavigation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
-  },
-  dateButton: {
-    padding: 8,
-    borderRadius: 8,
-    backgroundColor: '#F3F4F6',
-  },
-  selectedDate: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    flex: 1,
-    textAlign: 'center',
-  },
-  reminderContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#FEF3C7',
-    marginHorizontal: 20,
-    marginVertical: 8,
-    borderRadius: 8,
-  },
-  reminderText: {
-    fontSize: 14,
-    color: '#92400E',
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 16,
-    marginTop: 8,
-  },
-  mealCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  mealCardCompleted: {
-    backgroundColor: '#F0FDF4',
-    borderColor: '#10B981',
-  },
-  mealCardOptional: {
-    borderStyle: 'dashed',
-    borderColor: '#9CA3AF',
-  },
-  mealTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flexWrap: 'wrap',
-  },
-  optionalBadge: {
-    fontSize: 9,
-    color: '#6B7280',
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderRadius: 3,
-    fontWeight: '500',
-    flexShrink: 0,
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 4,
-  },
-  statusIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  mealHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  mealInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-    minWidth: 0, // Allows shrinking below content size
-  },
-  mealTextContainer: {
-    flex: 1,
-    minWidth: 0,
-  },
-  mealIcon: {
-    fontSize: 24,
-    flexShrink: 0,
-  },
-  mealType: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#111827',
-    flexShrink: 1,
-  },
-  mealTime: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  mealDetails: {
-    alignItems: 'flex-end',
-    flexShrink: 0,
-    maxWidth: '45%',
-  },
-  mealFood: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#374151',
-    textAlign: 'right',
-  },
-  mealCalories: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  completedText: {
-    textDecorationLine: 'line-through',
-    color: '#6B7280',
-  },
-  completedBadge: {
-    backgroundColor: '#10B981',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-    marginTop: 8,
-  },
-  completedBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  quickActions: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 24,
-    marginBottom: 32,
-  },
-  actionButton: {
-    flex: 1,
-    backgroundColor: '#10B981',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
-  },
-  scanButton: {
-    backgroundColor: '#3B82F6',
-  },
-  actionButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  closeButton: {
-    fontSize: 16,
-    color: '#10B981',
-    fontWeight: '600',
-  },
-  modalContent: {
-    flex: 1,
-    padding: 20,
-  },
-  mealPlanCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 24,
-    alignItems: 'center',
-  },
-  mealPlanTime: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginBottom: 8,
-  },
-  mealPlanFood: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  mealPlanCalories: {
-    fontSize: 16,
-    color: '#10B981',
-    fontWeight: '500',
-  },
-  modalActions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  modalActionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#10B981',
-    gap: 8,
-  },
-  modalActionText: {
-    color: '#10B981',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  recommendationSection: {
-    marginBottom: 24,
-  },
-  recommendationTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 12,
-  },
-  recommendationText: {
-    fontSize: 14,
-    color: '#6B7280',
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  optionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 12,
-  },
-  foodOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  foodOptionCard: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  foodOptionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
-  },
-  // Meal Detail Modal Styles
-  mealInfoCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  mealDetailTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
-    marginTop: 12,
-    marginBottom: 4,
-  },
-  mealDetailValue: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#111827',
-  },
-  mealDetailCalories: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#10B981',
-  },
-  recommendationCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  recommendationDescription: {
-    fontSize: 14,
-    color: '#6B7280',
-    lineHeight: 20,
-  },
-  foodChoicesCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  foodChoicesList: {
-    gap: 8,
-  },
-  foodChoiceItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: '#F9FAFB',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  foodChoiceText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#111827',
-    flex: 1,
-  },
-  foodChoiceCalories: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#10B981',
-  },
-  fluidIntakeCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  fluidIntakeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  fluidIntakeIcon: {
-    fontSize: 20,
-  },
-  fluidIntakeText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#111827',
-  },
-  fluidIntakeSubtext: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  actionButtonsContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  modalScanButton: {
-    flex: 1,
-    backgroundColor: '#10B981',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
-  },
-  modalScanButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  adjustButton: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#3B82F6',
-    gap: 8,
-  },
-  adjustButtonText: {
-    color: '#3B82F6',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  statusButtonsContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  completedButton: {
-    flex: 1,
-    backgroundColor: '#10B981',
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  completedButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  skippedButton: {
-    flex: 1,
-    backgroundColor: '#EF4444',
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  skippedButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  modalBottomSpacing: {
-    height: 20,
-  },
-});

@@ -121,6 +121,14 @@ export const onboardingStyles = StyleSheet.create({
         borderColor: '#EF4444',
         backgroundColor: '#FEF2F2',
     },
+    timeInputIcon: {
+        marginRight: 8,
+    },
+    timeInputField: {
+        flex: 1,
+        fontSize: 16,
+        color: '#111827',
+    },
     textArea: {
         minHeight: 80,
         textAlignVertical: 'top',

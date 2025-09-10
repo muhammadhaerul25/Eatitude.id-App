@@ -8,16 +8,18 @@ import {
   View
 } from 'react-native';
 
-import { NutritionSections } from '../personal/NutritionSections';
-import { ProfileSection } from '../personal/ProfileSection';
-import { StatusSection } from '../personal/StatusSection';
-import { personalStyles } from '../personal/styles';
-import { usePersonalLogic } from '../personal/usePersonalLogic';
+import { usePersonalLogic } from '../../hooks/usePersonalLogic';
+import { personalStyles } from '../../styles/tabs/personalStyles';
+import NutritionSections from '../personal/NutritionSections';
+import ProfileSection from '../personal/ProfileSection';
+import StatusSection from '../personal/StatusSection';
 
 export default function PersonalScreen() {
   const {
     profile,
     nutritionPlan,
+    isGeneratingPlan,
+    generateNutritionPlan,
     getStatusColor,
     getStatusText,
     getBMI,
@@ -25,11 +27,30 @@ export default function PersonalScreen() {
     getSleepDuration,
   } = usePersonalLogic();
 
-  if (!profile || !nutritionPlan) {
+  if (!profile) {
     return (
       <SafeAreaView style={personalStyles.container}>
         <View style={personalStyles.loadingContainer}>
-          <Text style={personalStyles.loadingText}>Memuat rencana personal Anda...</Text>
+          <Text style={personalStyles.loadingText}>Memuat profil Anda...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!nutritionPlan) {
+    return (
+      <SafeAreaView style={personalStyles.container}>
+        <View style={personalStyles.loadingContainer}>
+          <Text style={personalStyles.loadingText}>Rencana nutrisi belum tersedia</Text>
+          <TouchableOpacity
+            style={[personalStyles.actionButton, { backgroundColor: '#10B981', marginTop: 16 }]}
+            onPress={generateNutritionPlan}
+            disabled={isGeneratingPlan}
+          >
+            <Text style={personalStyles.actionButtonText}>
+              {isGeneratingPlan ? 'Menghasilkan Rencana...' : 'Generate Rencana Nutrisi AI'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -64,10 +85,22 @@ export default function PersonalScreen() {
         {/* Nutrition Sections */}
         <NutritionSections nutritionPlan={nutritionPlan} />
 
-        {/* Action Button */}
-        <TouchableOpacity style={personalStyles.actionButton}>
-          <Text style={personalStyles.actionButtonText}>Lihat Progress</Text>
-        </TouchableOpacity>
+        {/* Action Buttons */}
+        <View style={personalStyles.actionContainer}>
+          <TouchableOpacity
+            style={[personalStyles.actionButton, { backgroundColor: '#10B981' }]}
+            onPress={generateNutritionPlan}
+            disabled={isGeneratingPlan}
+          >
+            <Text style={personalStyles.actionButtonText}>
+              {isGeneratingPlan ? 'Menghasilkan Rencana...' : 'Generate Rencana Nutrisi AI'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={personalStyles.actionButton}>
+            <Text style={personalStyles.actionButtonText}>Lihat Progress</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={personalStyles.bottomSpacing} />
       </ScrollView>

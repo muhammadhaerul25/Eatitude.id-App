@@ -28,6 +28,28 @@ user_data = {
     "tujuan": "Meningkatkan kesehatan",
 }
 
+user_data_1 = {
+    "nama": "Muhammad Haerul",
+    "usia": 10,
+    "jenis_kelamin": "Laki-laki",
+
+    "berat_badan": 62,
+    "tinggi_badan": 167,
+    "imt": PersonalPlanner.calculate_imt(62, 167),
+
+    "tingkat_aktivitas": "Ringan",
+    "catatan_aktivitas": "Olahraga ringan 3x seminggu",
+    "waktu_bangun": "07.00",
+    "waktu_tidur": "22.00",
+
+    "preferensi_makanan": "Makanan sehat",
+    "alergi_makanan": "Tidak ada alergi",
+    "kondisi_kesehatan": "Sehat",
+
+    "tujuan": "Meningkatkan kesehatan",
+}
+
+
 user_personal_plan = {
     "kebutuhan_kalori": {
         "total_kalori_per_hari_(kcal)": 2150
@@ -170,9 +192,9 @@ user_progress_per_day = {
 # print(prompt)
 
 # create personal plan
-# personal_plan = PersonalPlanner.generate_personal_healthy_eating_plan(user_data)
-# print(json.dumps(personal_plan, indent=4, ensure_ascii=False))
-# print(type(personal_plan))
+personal_plan = PersonalPlanner.generate_personal_healthy_eating_plan(user_data)
+print(json.dumps(personal_plan, indent=4, ensure_ascii=False))
+print(type(personal_plan))
 
 # test image understanding
 # byteplus_processor = BytePlusProcessor()

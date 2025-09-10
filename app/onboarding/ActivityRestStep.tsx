@@ -1,9 +1,9 @@
 import { Activity } from 'lucide-react-native';
 import React from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { TimeInput } from './components/TimeInput';
-import { onboardingStyles as styles } from './styles';
-import { UserProfile, activityLevels } from './types';
+import { TimeInput } from '../../components/TimeInput';
+import { UserProfile, activityLevels } from '../../hooks/onboardingTypes';
+import { onboardingStyles as styles } from '../../styles/tabs/onboardingStyles';
 
 interface ActivityRestStepProps {
     profile: UserProfile;
@@ -22,7 +22,7 @@ export const ActivityRestStep: React.FC<ActivityRestStepProps> = ({ profile, upd
                     <Text style={styles.required}> *</Text>
                 </Text>
                 <View style={styles.activityButtons}>
-                    {activityLevels.map((activity) => (
+                    {activityLevels.map((activity: { key: string; label: string; description: string }) => (
                         <TouchableOpacity
                             key={activity.key}
                             style={[
@@ -80,3 +80,5 @@ export const ActivityRestStep: React.FC<ActivityRestStepProps> = ({ profile, upd
         </View>
     );
 };
+
+export default ActivityRestStep;

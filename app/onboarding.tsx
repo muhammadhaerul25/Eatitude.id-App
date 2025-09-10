@@ -8,18 +8,20 @@ import {
   View,
 } from 'react-native';
 
-import { ActivityRestStep } from './onboarding/ActivityRestStep';
-import { BodyMetricsStep } from './onboarding/BodyMetricsStep';
-import { GoalsObjectivesStep } from './onboarding/GoalsObjectivesStep';
-import { PersonalInfoStep } from './onboarding/PersonalInfoStep';
-import { onboardingStyles } from './onboarding/styles';
-import { steps } from './onboarding/types';
-import { useOnboardingLogic } from './onboarding/useOnboardingLogic';
+import { steps } from '../hooks/onboardingTypes';
+import { useOnboardingLogic } from '../hooks/useOnboardingLogic';
+import { onboardingStyles } from '../styles/tabs/onboardingStyles';
+import { LoadingOverlay } from './components/LoadingOverlay';
+import ActivityRestStep from './onboarding/ActivityRestStep';
+import BodyMetricsStep from './onboarding/BodyMetricsStep';
+import GoalsObjectivesStep from './onboarding/GoalsObjectivesStep';
+import PersonalInfoStep from './onboarding/PersonalInfoStep';
 
 export default function OnboardingScreen() {
   const {
     currentStep,
     profile,
+    isGeneratingPlan,
     validateCurrentStep,
     nextStep,
     prevStep,
@@ -44,6 +46,13 @@ export default function OnboardingScreen() {
 
   return (
     <SafeAreaView style={onboardingStyles.container}>
+      {/* Loading Overlay for Plan Generation */}
+      <LoadingOverlay
+        visible={isGeneratingPlan}
+        title="Generating Your Personal Plan"
+        subtitle="AI is analyzing your profile and creating a personalized nutrition plan. This process may take up to 2 minutes."
+      />
+
       {/* Header */}
       <View style={onboardingStyles.header}>
         <Text style={onboardingStyles.appName}>Eatitude</Text>
@@ -80,17 +89,25 @@ export default function OnboardingScreen() {
           style={[
             onboardingStyles.nextButton,
             currentStep === 0 && onboardingStyles.nextButtonFull,
-            !validateCurrentStep() && onboardingStyles.nextButtonDisabled
+            (!validateCurrentStep() || isGeneratingPlan) && onboardingStyles.nextButtonDisabled
           ]}
           onPress={nextStep}
+          disabled={isGeneratingPlan}
         >
           <Text style={[
             onboardingStyles.nextButtonText,
-            !validateCurrentStep() && onboardingStyles.nextButtonTextDisabled
+            (!validateCurrentStep() || isGeneratingPlan) && onboardingStyles.nextButtonTextDisabled
           ]}>
-            {currentStep === steps.length - 1 ? 'Get Started' : 'Continue'}
+            {isGeneratingPlan
+              ? 'Generating Plan...'
+              : currentStep === steps.length - 1
+                ? 'Get Started'
+                : 'Continue'
+            }
           </Text>
-          <ChevronRight size={20} color={!validateCurrentStep() ? "#9CA3AF" : "#FFFFFF"} />
+          {!isGeneratingPlan && (
+            <ChevronRight size={20} color={(!validateCurrentStep() || isGeneratingPlan) ? "#9CA3AF" : "#FFFFFF"} />
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>

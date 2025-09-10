@@ -1,9 +1,9 @@
 import { User } from 'lucide-react-native';
 import React from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { AgeInput } from './components/AgeInput';
-import { onboardingStyles as styles } from './styles';
-import { UserProfile } from './types';
+import { AgeInput } from '../../components/AgeInput';
+import { UserProfile } from '../../hooks/onboardingTypes';
+import { onboardingStyles as styles } from '../../styles/tabs/onboardingStyles';
 
 interface PersonalInfoStepProps {
     profile: UserProfile;
@@ -72,3 +72,5 @@ export const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({ profile, upd
         </View>
     );
 };
+
+export default PersonalInfoStep;
