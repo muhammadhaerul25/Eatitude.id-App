@@ -53,6 +53,83 @@ export interface NutritionEstimation {
     catatan: string;
 }
 
+// Nutrition Advisor Interfaces
+export interface UserProgress {
+    target_kalori: string;
+    target_makronutrisi: {
+        karbohidrat: string;
+        protein: string;
+        lemak: string;
+        serat: string;
+    };
+    status_mikronutrisi: {
+        vitamin: {
+            vitamin_a: string;
+            vitamin_b: string;
+            vitamin_c: string;
+            vitamin_d: string;
+            vitamin_e: string;
+            vitamin_k: string;
+        };
+        mineral: {
+            kalsium: string;
+            zat_besi: string;
+            magnesium: string;
+            kalium: string;
+            natrium: string;
+            zinc: string;
+            yodium: string;
+        };
+    };
+    batas_konsumsi: {
+        gula: string;
+        garam: string;
+        lemak_jenuh: string;
+        lemak_trans: string;
+        kafein: string;
+        kolestrol: string;
+    };
+    asupan_cairan: {
+        air: string;
+    };
+}
+
+export interface NutritionAdvisorRequest {
+    user_data: UserData;
+    personal_plan: PersonalPlan;
+    meal_plan: MealPlan;
+    user_progress: UserProgress | Record<string, any>;
+}
+
+export interface NutritionAdvice {
+    nutrition_advice: {
+        greeting?: string;
+        analysis?: {
+            calorie_status?: string;
+            macronutrient_balance?: string;
+            micronutrient_status?: string;
+            hydration_status?: string;
+            consumption_warnings?: string[];
+        };
+        recommendations?: {
+            immediate_actions?: string[];
+            meal_suggestions?: string[];
+            lifestyle_tips?: string[];
+            supplement_advice?: string[];
+        };
+        encouragement?: string;
+        next_steps?: string[];
+        disclaimer?: string;
+    };
+}
+
+export interface NutritionAdvisorResponse {
+    insight: string;
+    recommendation: string;
+    reminder: string;
+    alert: string;
+}
+
 class ApiService {
     private async request<T>(
         endpoint: string,
@@ -230,22 +307,37 @@ class ApiService {
         });
     }
 
-    // Generate nutrition advice
+    // Generate nutrition advice with enhanced type safety and error handling
     async generateNutritionAdvice(
-        userData: any,
-        personalPlan: any,
-        mealPlan: any,
-        userProgress: any
-    ): Promise<any> {
-        return this.request('/generate_nutrition_advisor', {
-            method: 'POST',
-            body: JSON.stringify({
-                user_data: userData,
-                personal_plan: personalPlan,
-                meal_plan: mealPlan,
-                user_progress: userProgress,
-            }),
+        userData: UserData,
+        personalPlan: PersonalPlan,
+        mealPlan: MealPlan,
+        userProgress?: UserProgress
+    ): Promise<NutritionAdvisorResponse> {
+        console.log('🤖 Generating nutrition advice...');
+        console.log('📊 Request data:', {
+            userData: userData.nama,
+            hasPersonalPlan: !!personalPlan,
+            hasMealPlan: !!mealPlan,
+            hasUserProgress: !!userProgress
         });
+
+        const requestBody: NutritionAdvisorRequest = {
+            user_data: userData,
+            personal_plan: personalPlan,
+            meal_plan: mealPlan,
+            user_progress: userProgress || {},
+        };
+
+        console.log('⏱️ Using extended timeout for nutrition advice generation (10 minutes)');
+
+        const response = await this.request<NutritionAdvisorResponse>('/generate_nutrition_advisor', {
+            method: 'POST',
+            body: JSON.stringify(requestBody),
+        }, 600000); // 10 minutes timeout for very slow AI processing
+
+        console.log('✅ Nutrition advice generated successfully');
+        return response;
     }
 }
 

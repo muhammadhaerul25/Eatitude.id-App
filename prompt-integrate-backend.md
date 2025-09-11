@@ -1,7 +1,7 @@
 Perfect! I’ve crafted a **ready-to-use prompt for each of your six FastAPI endpoints**. You can paste these directly into GPT (or any AI assistant) to generate the TypeScript + React integration with full type safety. Each prompt is tailored to the specific endpoint, method, and expected request/response.
 
 -
----
+<!-- ---
 
 ## **2️⃣ Personal Plan — POST /generate\_personal\_plan**
 
@@ -24,7 +24,7 @@ Constraints:
 - Use async/await syntax.
 - Include try/catch error handling.
 - Maintain clean, readable, and type-safe code.
-```
+``` -->
 
 ---
 
@@ -53,7 +53,7 @@ Constraints:
 
 ---
 
-## **4️⃣ Food Scanner — POST /generate\_food\_nutrition\_estimation**
+<!-- ## **4️⃣ Food Scanner — POST /generate\_food\_nutrition\_estimation**
 
 ```
 You are a senior full-stack developer. Generate a TypeScript API integration for a React app using fetch or axios for the following FastAPI endpoint.
@@ -73,12 +73,12 @@ The output should include:
 Constraints:
 - Use async/await syntax.
 - Include try/catch error handling.
-- Maintain clean, readable, and type-safe code.
+- Maintain clean, readable, and type-safe code. -->
 ```
 
 ---
 
-## **5️⃣ Food Scanner (Label) — POST /generate\_label\_informasi\_gizi\_nutrition\_estimation**
+<!-- ## **5️⃣ Food Scanner (Label) — POST /generate\_label\_informasi\_gizi\_nutrition\_estimation**
 
 ```
 You are a senior full-stack developer. Generate a TypeScript API integration for a React app using fetch or axios for the following FastAPI endpoint.
@@ -123,7 +123,7 @@ The output should include:
 Constraints:
 - Use async/await syntax.
 - Include try/catch error handling.
-- Maintain clean, readable, and type-safe code.
+- Maintain clean, readable, and type-safe code. -->
 ```
 
 ---

@@ -28,27 +28,6 @@ user_data = {
     "tujuan": "Meningkatkan kesehatan",
 }
 
-user_data_1 = {
-    "nama": "Muhammad Haerul",
-    "usia": 10,
-    "jenis_kelamin": "Laki-laki",
-
-    "berat_badan": 62,
-    "tinggi_badan": 167,
-    "imt": PersonalPlanner.calculate_imt(62, 167),
-
-    "tingkat_aktivitas": "Ringan",
-    "catatan_aktivitas": "Olahraga ringan 3x seminggu",
-    "waktu_bangun": "07.00",
-    "waktu_tidur": "22.00",
-
-    "preferensi_makanan": "Makanan sehat",
-    "alergi_makanan": "Tidak ada alergi",
-    "kondisi_kesehatan": "Sehat",
-
-    "tujuan": "Meningkatkan kesehatan",
-}
-
 
 user_personal_plan = {
     "kebutuhan_kalori": {
@@ -191,10 +170,11 @@ user_progress_per_day = {
 # prompt = PromptTemplates.get_prompt_for_nutrition_advisor(user_data, user_personal_plan, user_meal_plan_per_day, user_progress_per_day)
 # print(prompt)
 
+# DONE
 # create personal plan
-personal_plan = PersonalPlanner.generate_personal_healthy_eating_plan(user_data)
-print(json.dumps(personal_plan, indent=4, ensure_ascii=False))
-print(type(personal_plan))
+# personal_plan = PersonalPlanner.generate_personal_healthy_eating_plan(user_data)
+# print(json.dumps(personal_plan, indent=4, ensure_ascii=False))
+# print(type(personal_plan))
 
 # test image understanding
 # byteplus_processor = BytePlusProcessor()
@@ -209,15 +189,15 @@ print(type(personal_plan))
 
 # scan meal
 # byteplus_processor = BytePlusProcessor()
-# meal_info = FoodScanner.generate_food_nutrition_estimation(r"D:\Eatitude.id\Eatitude.id\ai-core\images\susu.jpg")
+# meal_info = FoodScanner.generate_food_nutrition_estimation(r"C:\Users\mamat\Eatitude.id-App\ai_core\images\nasi_ayam.jpg")
 # print(json.dumps(meal_info, indent=4, ensure_ascii=False))
 # print(type(meal_info))
 
 # scan ingredient
-# byteplus_processor = BytePlusProcessor()
-# ingredient_info = LabelInformasiGiziScanner.generate_label_informasi_gizi_nutrition_estimation(r"D:\Eatitude.id\Eatitude.id\ai-core\images\label_gizi1.jpg")
-# print(json.dumps(ingredient_info, indent=4, ensure_ascii=False))
-# print(type(ingredient_info))
+byteplus_processor = BytePlusProcessor()
+ingredient_info = LabelInformasiGiziScanner.generate_label_informasi_gizi_nutrition_estimation(r"C:\Users\mamat\Eatitude.id-App\ai_core\images\label_gizi1.jpg")
+print(json.dumps(ingredient_info, indent=4, ensure_ascii=False))
+print(type(ingredient_info))
 
 # create nutrition advisor
 # nutrition_advisor = NutritionAdvisor.generate_nutrition_advisor(user_data, user_personal_plan, user_meal_plan_per_day, user_progress_per_day, r"D:\Eatitude.id\Eatitude.id\ai-core\images\nasi_ayam.jpg")

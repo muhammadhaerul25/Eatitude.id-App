@@ -664,4 +664,64 @@ export const nutritionScannerStyles = StyleSheet.create({
     scanBottomSpacing: {
         height: 40,
     },
+    // Image preview styles
+    imagePreviewContainer: {
+        marginBottom: 16,
+        padding: 16,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+    },
+    imageWrapper: {
+        position: 'relative',
+        alignItems: 'center',
+    },
+    previewImage: {
+        width: 200,
+        height: 200,
+        borderRadius: 12,
+        backgroundColor: '#F3F4F6',
+    },
+    removeImageButton: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        backgroundColor: '#EF4444',
+        borderRadius: 16,
+        width: 32,
+        height: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    removeImageText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    // Scanned image display styles
+    scannedImageContainer: {
+        marginTop: 12,
+        borderRadius: 12,
+        overflow: 'hidden',
+        backgroundColor: '#F3F4F6',
+    },
+    scannedImage: {
+        width: '100%',
+        height: 200,
+        backgroundColor: '#F3F4F6',
+    },
+    imageLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#374151',
+        marginBottom: 8,
+        paddingHorizontal: 4,
+    },
+    photoPlaceholderText: {
+        fontSize: 12,
+        color: '#9CA3AF',
+        marginTop: 4,
+        textAlign: 'center',
+    },
 });

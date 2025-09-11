@@ -349,7 +349,7 @@ export default function IndexScreen() {
                 <Scan size={20} color="#FFFFFF" />
                 <Text style={indexTabStyles.modalScanButtonText}>Scan Food</Text>
               </TouchableOpacity>
-
+                {/* TODO ganti icon plus jadi gear/edit/pencil */}
               <TouchableOpacity style={indexTabStyles.adjustButton}>
                 <Plus size={20} color="#3B82F6" />
                 <Text style={indexTabStyles.adjustButtonText}>Adjust Food</Text>

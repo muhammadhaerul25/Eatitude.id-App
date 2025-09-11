@@ -21,44 +21,50 @@ export default function RootLayout() {
   // Re-check onboarding status when app comes into focus
   useFocusEffect(
     useCallback(() => {
+      console.log('📱 useFocusEffect triggered - rechecking onboarding status');
       checkOnboardingStatus();
     }, [])
   );
 
   useEffect(() => {
     if (!isLoading && !isNavigating) {
-      const inTabsGroup = segments[0] === '(tabs)';
-      const inWelcome = segments[0] === 'welcome';
-      const inOnboarding = segments[0] === 'onboarding';
+      // Add a delay to allow AsyncStorage state to sync
+      const timeoutId = setTimeout(() => {
+        const inTabsGroup = segments[0] === '(tabs)';
+        const inOnboarding = segments[0] === 'onboarding';
 
-      console.log('🧭 Navigation check:', {
-        hasCompletedOnboarding,
-        hasSeenWelcome,
-        currentSegment: segments[0],
-        inTabsGroup,
-        inWelcome,
-        inOnboarding
-      });
+        console.log('🧭 Navigation check:', {
+          hasCompletedOnboarding,
+          hasSeenWelcome,
+          currentSegment: segments[0],
+          inTabsGroup,
+          inOnboarding
+        });
 
-      // If user completed onboarding, always go to main app
-      if (hasCompletedOnboarding && !inTabsGroup && segments[0] !== '+not-found') {
-        console.log('✅ Redirecting to tabs (onboarding completed)');
-        setIsNavigating(true);
-        router.replace('/(tabs)');
-        setTimeout(() => setIsNavigating(false), 1000);
-      } else if (!hasCompletedOnboarding && !hasSeenWelcome && !inWelcome && !inOnboarding && segments[0] !== '+not-found') {
-        // Show welcome page for new users who haven't seen it
-        console.log('👋 Redirecting to welcome (new user)');
-        setIsNavigating(true);
-        router.replace('/welcome');
-        setTimeout(() => setIsNavigating(false), 1000);
-      } else if (!hasCompletedOnboarding && hasSeenWelcome && !inOnboarding && !inWelcome && segments[0] !== '+not-found') {
-        // Show onboarding for users who have seen welcome but not completed onboarding
-        console.log('📝 Redirecting to onboarding');
-        setIsNavigating(true);
-        router.replace('/onboarding');
-        setTimeout(() => setIsNavigating(false), 1000);
-      }
+        // Case 1: User completed onboarding - redirect to tabs
+        if (hasCompletedOnboarding && !inTabsGroup) {
+          console.log('✅ Redirecting to tabs (onboarding completed)');
+          setIsNavigating(true);
+          router.replace('/(tabs)');
+          setTimeout(() => setIsNavigating(false), 1000);
+          return;
+        }
+
+        // Case 2: User has seen welcome but not completed onboarding - redirect to onboarding  
+        if (!hasCompletedOnboarding && hasSeenWelcome && !inOnboarding && !inTabsGroup) {
+          console.log('📝 Redirecting to onboarding (welcome seen, not completed)');
+          setIsNavigating(true);
+          router.replace('/onboarding');
+          setTimeout(() => setIsNavigating(false), 1000);
+          return;
+        }
+
+        // Case 3: New users stay at root (index/welcome) - no action needed
+        // Case 4: Users in correct flow - no action needed
+        console.log('� User in correct flow - no redirect needed');
+      }, 500); // Reduced delay since logic is much simpler
+
+      return () => clearTimeout(timeoutId);
     }
   }, [hasCompletedOnboarding, hasSeenWelcome, isLoading, segments, isNavigating]);
 

@@ -1,13 +1,19 @@
+import * as ImagePicker from 'expo-image-picker';
 import {
+    AlertCircle,
     Camera,
     CheckCircle,
     Info,
     Save,
+    Upload,
     X,
     Zap
 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
+    ActivityIndicator,
+    Alert,
+    Image,
     Modal,
     SafeAreaView,
     ScrollView,
@@ -15,6 +21,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { ScanType, useFoodScanner, useFormattedNutrition } from '../../hooks/useFoodScanner';
 import { nutritionScannerStyles } from '../../styles/tabs/nutritionScannerStyles';
 
 interface NutritionScannerProps {
@@ -24,30 +31,208 @@ interface NutritionScannerProps {
 }
 
 export default function NutritionScanner({ visible, onClose, onSaveFood }: NutritionScannerProps) {
-    const [showResults, setShowResults] = useState(false);
-    const [activeTab, setActiveTab] = useState<'meal' | 'label'>('meal');
-    const [isScanning, setIsScanning] = useState(false);
+    const [activeTab, setActiveTab] = useState<ScanType>('meal');
+    const [selectedImage, setSelectedImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-    const handleScan = () => {
-        setIsScanning(true);
-        // Simulate scanning process
-        setTimeout(() => {
-            setIsScanning(false);
-            setShowResults(true);
-        }, 2000);
+    // Use the food scanner hook
+    const {
+        scanFood,
+        isScanning,
+        scanResult,
+        scanError,
+        confidence,
+        clearResult,
+        clearError,
+        retry
+    } = useFoodScanner();
+
+    // Get formatted nutrition data
+    const formattedNutrition = useFormattedNutrition(scanResult);
+
+    const handleImagePicker = async () => {
+        try {
+            console.log('Image picker triggered');
+
+            // Check if we're in a web environment or if ImagePicker is not available
+            const isWeb = typeof window !== 'undefined' && window.document;
+
+            if (isWeb || !ImagePicker) {
+                console.log('Using web fallback for image picking');
+                handleWebImagePicker();
+                return;
+            }
+
+            // Show options for camera or gallery
+            Alert.alert(
+                'Select Image',
+                'Choose how you want to select an image',
+                [
+                    { text: 'Camera', onPress: () => handleCamera() },
+                    { text: 'Gallery', onPress: () => handleGallery() },
+                    { text: 'Cancel', style: 'cancel' }
+                ]
+            );
+        } catch (error) {
+            console.error('Error in handleImagePicker:', error);
+            // Fallback to web picker
+            handleWebImagePicker();
+        }
+    };
+
+    const handleWebImagePicker = () => {
+        try {
+            console.log('Using web file input');
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.style.display = 'none';
+
+            input.onchange = (event) => {
+                const file = (event.target as HTMLInputElement).files?.[0];
+                if (file) {
+                    console.log('File selected:', file);
+
+                    setSelectedImage(file);
+
+                    // Create preview URL
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const result = e.target?.result as string;
+                        console.log('Preview created');
+                        setImagePreview(result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            document.body.appendChild(input);
+            input.click();
+            document.body.removeChild(input);
+        } catch (error) {
+            console.error('Error in web image picker:', error);
+            Alert.alert('Error', 'Failed to open file picker. Please try again.');
+        }
+    }; const handleCamera = async () => {
+        try {
+            console.log('Camera option selected');
+
+            // Request permission to access camera
+            const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+            console.log('Camera permission result:', permissionResult);
+
+            if (!permissionResult.granted) {
+                Alert.alert('Permission Required', 'Please allow access to your camera to take photos.');
+                return;
+            }
+
+            // Launch camera
+            const result = await ImagePicker.launchCameraAsync({
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.8,
+            });
+
+            console.log('Camera result:', result);
+
+            if (!result.canceled && result.assets && result.assets[0]) {
+                const asset = result.assets[0];
+                await processImageAsset(asset);
+            }
+        } catch (error) {
+            console.error('Error taking photo:', error);
+            Alert.alert('Error', 'Failed to take photo. Please try again.');
+        }
+    };
+
+    const handleGallery = async () => {
+        try {
+            console.log('Gallery option selected');
+
+            // Request permission to access media library
+            const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            console.log('Media library permission result:', permissionResult);
+
+            if (!permissionResult.granted) {
+                Alert.alert('Permission Required', 'Please allow access to your photo library to select images.');
+                return;
+            }
+
+            // Launch image picker
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.8,
+            });
+
+            console.log('Gallery result:', result);
+
+            if (!result.canceled && result.assets && result.assets[0]) {
+                const asset = result.assets[0];
+                await processImageAsset(asset);
+            }
+        } catch (error) {
+            console.error('Error picking image:', error);
+            Alert.alert('Error', 'Failed to pick image. Please try again.');
+        }
+    };
+
+    const processImageAsset = async (asset: ImagePicker.ImagePickerAsset) => {
+        try {
+            console.log('Processing image asset:', asset);
+
+            // Convert to File object for API
+            const response = await fetch(asset.uri);
+            const blob = await response.blob();
+            const file = new File([blob], 'image.jpg', { type: 'image/jpeg' });
+
+            console.log('File created:', file);
+
+            setSelectedImage(file);
+            setImagePreview(asset.uri);
+
+            console.log('Image set successfully');
+        } catch (error) {
+            console.error('Error processing image:', error);
+            Alert.alert('Error', 'Failed to process image. Please try again.');
+        }
+    };
+
+    const handleScan = async () => {
+        if (!selectedImage) {
+            Alert.alert('No Image', 'Please select an image first.');
+            return;
+        }
+
+        try {
+            await scanFood(selectedImage, activeTab);
+        } catch (error) {
+            console.error('Scan error:', error);
+        }
     };
 
     const handleSaveFood = () => {
-        onSaveFood?.();
-        onClose();
+        if (scanResult) {
+            onSaveFood?.();
+            handleReset();
+            onClose();
+        }
     };
 
-    const resetScanner = () => {
-        setShowResults(false);
-        setIsScanning(false);
+    const handleReset = () => {
+        clearResult();
+        setSelectedImage(null);
+        setImagePreview(null);
     };
 
-    return (
+    const handleRetry = async () => {
+        clearError();
+        if (selectedImage) {
+            await scanFood(selectedImage, activeTab);
+        }
+    }; return (
         <Modal
             visible={visible}
             animationType="slide"
@@ -66,15 +251,15 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                             <Text style={nutritionScannerStyles.headerSubtitle}>Powered by Eatitude AI</Text>
                         </View>
                     </View>
-                    {showResults && (
-                        <TouchableOpacity onPress={resetScanner} style={nutritionScannerStyles.resetButton}>
+                    {scanResult && (
+                        <TouchableOpacity onPress={handleReset} style={nutritionScannerStyles.resetButton}>
                             <Text style={nutritionScannerStyles.resetButtonText}>Scan Again</Text>
                         </TouchableOpacity>
                     )}
                 </View>
 
                 {/* Tab Navigation */}
-                {!showResults && (
+                {!scanResult && (
                     <View style={nutritionScannerStyles.tabContainer}>
                         <TouchableOpacity
                             style={[nutritionScannerStyles.tab, activeTab === 'meal' && nutritionScannerStyles.activeTab]}
@@ -98,7 +283,7 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                 )}
 
                 {/* Scan Content */}
-                {!showResults && !isScanning && (
+                {!scanResult && !isScanning && (
                     <ScrollView style={nutritionScannerStyles.scanContent} showsVerticalScrollIndicator={false}>
                         {activeTab === 'meal' ? (
                             <View style={nutritionScannerStyles.scanSection}>
@@ -132,14 +317,57 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                                             <Text style={nutritionScannerStyles.cameraText}>Position food in center</Text>
                                         </View>
 
+                                        {/* Image Preview Section */}
+                                        {imagePreview && (
+                                            <View style={nutritionScannerStyles.imagePreviewContainer}>
+                                                <Text style={nutritionScannerStyles.sectionTitle}>Selected Image</Text>
+                                                <View style={nutritionScannerStyles.imageWrapper}>
+                                                    <Image
+                                                        source={{ uri: imagePreview }}
+                                                        style={nutritionScannerStyles.previewImage}
+                                                        resizeMode="cover"
+                                                    />
+                                                    <TouchableOpacity
+                                                        style={nutritionScannerStyles.removeImageButton}
+                                                        onPress={() => {
+                                                            setSelectedImage(null);
+                                                            setImagePreview(null);
+                                                        }}
+                                                    >
+                                                        <Text style={nutritionScannerStyles.removeImageText}>✕</Text>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
+                                        )}
+
+                                        {/* Image Picker Button */}
+                                        {!selectedImage && (
+                                            <TouchableOpacity
+                                                style={[nutritionScannerStyles.scanButton, { backgroundColor: '#3B82F6' }]}
+                                                onPress={handleImagePicker}
+                                            >
+                                                <Upload size={20} color="#FFFFFF" />
+                                                <Text style={nutritionScannerStyles.scanButtonText}>Select Image</Text>
+                                            </TouchableOpacity>
+                                        )}
+
                                         {/* Scan Button */}
-                                        <TouchableOpacity
-                                            style={nutritionScannerStyles.scanButton}
-                                            onPress={handleScan}
-                                        >
-                                            <Zap size={20} color="#FFFFFF" />
-                                            <Text style={nutritionScannerStyles.scanButtonText}>Scan Food</Text>
-                                        </TouchableOpacity>
+                                        {selectedImage && (
+                                            <TouchableOpacity
+                                                style={nutritionScannerStyles.scanButton}
+                                                onPress={handleScan}
+                                                disabled={isScanning}
+                                            >
+                                                {isScanning ? (
+                                                    <ActivityIndicator size={20} color="#FFFFFF" />
+                                                ) : (
+                                                    <Zap size={20} color="#FFFFFF" />
+                                                )}
+                                                <Text style={nutritionScannerStyles.scanButtonText}>
+                                                    {isScanning ? 'Analyzing...' : 'Scan Food'}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )}
                                     </View>
                                 </View>
                             </View>
@@ -186,14 +414,57 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                                             </View>
                                         </View>
 
+                                        {/* Image Preview Section */}
+                                        {imagePreview && (
+                                            <View style={nutritionScannerStyles.imagePreviewContainer}>
+                                                <Text style={nutritionScannerStyles.sectionTitle}>Selected Image</Text>
+                                                <View style={nutritionScannerStyles.imageWrapper}>
+                                                    <Image
+                                                        source={{ uri: imagePreview }}
+                                                        style={nutritionScannerStyles.previewImage}
+                                                        resizeMode="cover"
+                                                    />
+                                                    <TouchableOpacity
+                                                        style={nutritionScannerStyles.removeImageButton}
+                                                        onPress={() => {
+                                                            setSelectedImage(null);
+                                                            setImagePreview(null);
+                                                        }}
+                                                    >
+                                                        <Text style={nutritionScannerStyles.removeImageText}>✕</Text>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
+                                        )}
+
+                                        {/* Image Picker Button */}
+                                        {!selectedImage && (
+                                            <TouchableOpacity
+                                                style={[nutritionScannerStyles.scanButton, { backgroundColor: '#3B82F6' }]}
+                                                onPress={handleImagePicker}
+                                            >
+                                                <Upload size={20} color="#FFFFFF" />
+                                                <Text style={nutritionScannerStyles.scanButtonText}>Select Label Image</Text>
+                                            </TouchableOpacity>
+                                        )}
+
                                         {/* Scan Button */}
-                                        <TouchableOpacity
-                                            style={nutritionScannerStyles.scanButton}
-                                            onPress={handleScan}
-                                        >
-                                            <Info size={20} color="#FFFFFF" />
-                                            <Text style={nutritionScannerStyles.scanButtonText}>Analyze Label</Text>
-                                        </TouchableOpacity>
+                                        {selectedImage && (
+                                            <TouchableOpacity
+                                                style={nutritionScannerStyles.scanButton}
+                                                onPress={handleScan}
+                                                disabled={isScanning}
+                                            >
+                                                {isScanning ? (
+                                                    <ActivityIndicator size={20} color="#FFFFFF" />
+                                                ) : (
+                                                    <Info size={20} color="#FFFFFF" />
+                                                )}
+                                                <Text style={nutritionScannerStyles.scanButtonText}>
+                                                    {isScanning ? 'Analyzing...' : 'Analyze Label'}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )}
                                     </View>
                                 </View>
                             </View>
@@ -222,7 +493,36 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                     </View>
                 )}
 
-                {showResults && (
+                {/* Error State */}
+                {scanError && (
+                    <View style={nutritionScannerStyles.scanningContainer}>
+                        <View style={nutritionScannerStyles.scanningContent}>
+                            <AlertCircle size={48} color="#EF4444" />
+                            <Text style={[nutritionScannerStyles.scanningTitle, { color: '#EF4444' }]}>
+                                Scan Failed
+                            </Text>
+                            <Text style={nutritionScannerStyles.scanningDescription}>
+                                {scanError}
+                            </Text>
+                            <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
+                                <TouchableOpacity
+                                    style={[nutritionScannerStyles.scanButton, { backgroundColor: '#EF4444', flex: 1 }]}
+                                    onPress={handleRetry}
+                                >
+                                    <Text style={nutritionScannerStyles.scanButtonText}>Try Again</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[nutritionScannerStyles.scanButton, { backgroundColor: '#6B7280', flex: 1 }]}
+                                    onPress={handleReset}
+                                >
+                                    <Text style={nutritionScannerStyles.scanButtonText}>Select New Image</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                )}
+
+                {scanResult && (
                     <ScrollView style={nutritionScannerStyles.resultsContainer} showsVerticalScrollIndicator={false}>
                         <View style={nutritionScannerStyles.resultsHeader}>
                             <CheckCircle size={24} color="#10B981" />
@@ -233,9 +533,9 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                         <View style={nutritionScannerStyles.confidenceCard}>
                             <Text style={nutritionScannerStyles.confidenceLabel}>Analysis Confidence</Text>
                             <View style={nutritionScannerStyles.confidenceBar}>
-                                <View style={[nutritionScannerStyles.confidenceBarFill, { width: '92%' }]} />
+                                <View style={[nutritionScannerStyles.confidenceBarFill, { width: `${confidence || 85}%` }]} />
                             </View>
-                            <Text style={nutritionScannerStyles.confidenceText}>92% accurate</Text>
+                            <Text style={nutritionScannerStyles.confidenceText}>{confidence || 85}% accurate</Text>
                         </View>
 
                         {/* Quick Summary */}
@@ -245,21 +545,21 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                                 <View style={nutritionScannerStyles.summaryItem}>
                                     <Text style={nutritionScannerStyles.summaryLabel}>Calories</Text>
                                     <Text style={nutritionScannerStyles.summaryValue}>
-                                        {activeTab === 'meal' ? '485' : '220'}
+                                        {scanResult["estimasi_total_kalori_(kcal)"]}
                                     </Text>
                                 </View>
                                 <View style={nutritionScannerStyles.summaryItem}>
                                     <Text style={nutritionScannerStyles.summaryLabel}>Grade</Text>
                                     <View style={nutritionScannerStyles.gradeBadgeSmall}>
                                         <Text style={nutritionScannerStyles.gradeTextSmall}>
-                                            {activeTab === 'meal' ? 'B+' : 'B'}
+                                            {scanResult.nutri_grade}
                                         </Text>
                                     </View>
                                 </View>
                                 <View style={nutritionScannerStyles.summaryItem}>
                                     <Text style={nutritionScannerStyles.summaryLabel}>Protein</Text>
                                     <Text style={nutritionScannerStyles.summaryValue}>
-                                        {activeTab === 'meal' ? '25g' : '8g'}
+                                        {scanResult.estimasi_kandungan_makronutrisi["protein_(g)"]}g
                                     </Text>
                                 </View>
                             </View>
@@ -269,54 +569,58 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                         <View style={nutritionScannerStyles.card}>
                             <Text style={nutritionScannerStyles.sectionTitle}>Nama Makanan</Text>
                             <Text style={nutritionScannerStyles.sectionValue}>
-                                {activeTab === 'meal' ? 'Nasi Goreng Ayam' : 'Sereal Gandum dengan Susu'}
+                                {scanResult.nama_makanan}
                             </Text>
                         </View>
 
                         {/* Foto Makanan */}
                         <View style={nutritionScannerStyles.card}>
                             <Text style={nutritionScannerStyles.sectionTitle}>Foto Makanan</Text>
-                            <View style={nutritionScannerStyles.photoPlaceholder}>
-                                <Camera size={32} color="#9CA3AF" />
-                            </View>
+                            <Text style={nutritionScannerStyles.sectionValue}>
+                                {scanResult.foto_makanan}
+                            </Text>
+                            {imagePreview ? (
+                                <View style={nutritionScannerStyles.scannedImageContainer}>
+                                    <Text style={nutritionScannerStyles.imageLabel}>Gambar yang Dipindai:</Text>
+                                    <Image
+                                        source={{ uri: imagePreview }}
+                                        style={nutritionScannerStyles.scannedImage}
+                                        resizeMode="cover"
+                                    />
+                                </View>
+                            ) : (
+                                <View style={nutritionScannerStyles.photoPlaceholder}>
+                                    <Camera size={32} color="#9CA3AF" />
+                                    <Text style={nutritionScannerStyles.photoPlaceholderText}>No image available</Text>
+                                </View>
+                            )}
                         </View>
 
                         {/* Estimasi Komposisi Makanan */}
                         <View style={nutritionScannerStyles.card}>
                             <Text style={nutritionScannerStyles.sectionTitle}>Estimasi Komposisi Makanan</Text>
-                            {activeTab === 'meal' ? (
-                                <>
-                                    <Text style={nutritionScannerStyles.compositionText}>Nasi Putih (150 gram)</Text>
-                                    <Text style={nutritionScannerStyles.compositionText}>Ayam Goreng (80 gram)</Text>
-                                    <Text style={nutritionScannerStyles.compositionText}>Telur (50 gram)</Text>
-                                    <Text style={nutritionScannerStyles.compositionText}>Sayuran Campur (30 gram)</Text>
-                                </>
-                            ) : (
-                                <>
-                                    <Text style={nutritionScannerStyles.compositionText}>Sereal Gandum (50 gram)</Text>
-                                    <Text style={nutritionScannerStyles.compositionText}>Susu Sapi (120 gram)</Text>
-                                </>
-                            )}
+                            {Object.entries(scanResult.estimasi_komposisi_makanan).map(([key, value], index) => (
+                                <Text key={index} style={nutritionScannerStyles.compositionText}>
+                                    {key.replace('_(g)', '')}: {value} gram
+                                </Text>
+                            ))}
                         </View>
 
                         {/* Kandungan Makronutrisi */}
                         <View style={nutritionScannerStyles.card}>
                             <Text style={nutritionScannerStyles.sectionTitle}>Kandungan Makronutrisi</Text>
-                            {activeTab === 'meal' ? (
-                                <>
-                                    <Text style={nutritionScannerStyles.nutrientText}>Karbohidrat (68 gram)</Text>
-                                    <Text style={nutritionScannerStyles.nutrientText}>Protein (25 gram)</Text>
-                                    <Text style={nutritionScannerStyles.nutrientText}>Lemak (12 gram)</Text>
-                                    <Text style={nutritionScannerStyles.nutrientText}>Serat (3 gram)</Text>
-                                </>
-                            ) : (
-                                <>
-                                    <Text style={nutritionScannerStyles.nutrientText}>Karbohidrat (42 gram)</Text>
-                                    <Text style={nutritionScannerStyles.nutrientText}>Protein (8 gram)</Text>
-                                    <Text style={nutritionScannerStyles.nutrientText}>Lemak (3 gram)</Text>
-                                    <Text style={nutritionScannerStyles.nutrientText}>Serat (4 gram)</Text>
-                                </>
-                            )}
+                            <Text style={nutritionScannerStyles.nutrientText}>
+                                Karbohidrat ({scanResult.estimasi_kandungan_makronutrisi["karbohidrat_(g)"]} gram)
+                            </Text>
+                            <Text style={nutritionScannerStyles.nutrientText}>
+                                Protein ({scanResult.estimasi_kandungan_makronutrisi["protein_(g)"]} gram)
+                            </Text>
+                            <Text style={nutritionScannerStyles.nutrientText}>
+                                Lemak ({scanResult.estimasi_kandungan_makronutrisi["lemak_(g)"]} gram)
+                            </Text>
+                            <Text style={nutritionScannerStyles.nutrientText}>
+                                Serat ({scanResult.estimasi_kandungan_makronutrisi["serat_(g)"]} gram)
+                            </Text>
                         </View>
 
                         {/* Kandungan Mikronutrisi */}
@@ -324,54 +628,89 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                             <Text style={nutritionScannerStyles.sectionTitle}>Kandungan Mikronutrisi</Text>
 
                             <Text style={nutritionScannerStyles.microSectionTitle}>Vitamin</Text>
-                            <Text style={nutritionScannerStyles.microNutrientName}>Vitamin A (0.2 mg)</Text>
-                            <Text style={nutritionScannerStyles.microNutrientName}>Vitamin B Kompleks (1.5 mg)</Text>
-                            <Text style={nutritionScannerStyles.microNutrientName}>Vitamin C (0.8 mg)</Text>
-                            <Text style={nutritionScannerStyles.microNutrientName}>Vitamin D (2.1 mg)</Text>
-                            <Text style={nutritionScannerStyles.microNutrientName}>Vitamin E (0.5 mg)</Text>
-                            <Text style={nutritionScannerStyles.microNutrientName}>Vitamin K (0.1 mg)</Text>
+                            <Text style={nutritionScannerStyles.microNutrientName}>
+                                Vitamin A ({scanResult.estimasi_kandungan_mikronutrisi["vitamin_(mg)"]["vitamin_a_(mg)"]} mg)
+                            </Text>
+                            <Text style={nutritionScannerStyles.microNutrientName}>
+                                Vitamin B Kompleks ({scanResult.estimasi_kandungan_mikronutrisi["vitamin_(mg)"]["vitamin_b_kompleks_(mg)"]} mg)
+                            </Text>
+                            <Text style={nutritionScannerStyles.microNutrientName}>
+                                Vitamin C ({scanResult.estimasi_kandungan_mikronutrisi["vitamin_(mg)"]["vitamin_c_(mg)"]} mg)
+                            </Text>
+                            <Text style={nutritionScannerStyles.microNutrientName}>
+                                Vitamin D ({scanResult.estimasi_kandungan_mikronutrisi["vitamin_(mg)"]["vitamin_d_(mg)"]} mg)
+                            </Text>
+                            <Text style={nutritionScannerStyles.microNutrientName}>
+                                Vitamin E ({scanResult.estimasi_kandungan_mikronutrisi["vitamin_(mg)"]["vitamin_e_(mg)"]} mg)
+                            </Text>
+                            <Text style={nutritionScannerStyles.microNutrientName}>
+                                Vitamin K ({scanResult.estimasi_kandungan_mikronutrisi["vitamin_(mg)"]["vitamin_k_(mg)"]} mg)
+                            </Text>
 
                             <Text style={[nutritionScannerStyles.microSectionTitle, { marginTop: 16 }]}>Mineral</Text>
-                            <Text style={nutritionScannerStyles.microNutrientName}>Kalsium (120 mg)</Text>
-                            <Text style={nutritionScannerStyles.microNutrientName}>Zat Besi (2.1 mg)</Text>
-                            <Text style={nutritionScannerStyles.microNutrientName}>Magnesium (45 mg)</Text>
-                            <Text style={nutritionScannerStyles.microNutrientName}>Kalium (180 mg)</Text>
-                            <Text style={nutritionScannerStyles.microNutrientName}>Natrium (160 mg)</Text>
-                            <Text style={nutritionScannerStyles.microNutrientName}>Zinc (1.2 mg)</Text>
-                            <Text style={nutritionScannerStyles.microNutrientName}>Yodium (0.05 mg)</Text>
+                            <Text style={nutritionScannerStyles.microNutrientName}>
+                                Kalsium ({scanResult.estimasi_kandungan_mikronutrisi["mineral_(mg)"]["kalsium_(mg)"]} mg)
+                            </Text>
+                            <Text style={nutritionScannerStyles.microNutrientName}>
+                                Zat Besi ({scanResult.estimasi_kandungan_mikronutrisi["mineral_(mg)"]["zat_besi_(mg)"]} mg)
+                            </Text>
+                            <Text style={nutritionScannerStyles.microNutrientName}>
+                                Magnesium ({scanResult.estimasi_kandungan_mikronutrisi["mineral_(mg)"]["magnesium_(mg)"]} mg)
+                            </Text>
+                            <Text style={nutritionScannerStyles.microNutrientName}>
+                                Kalium ({scanResult.estimasi_kandungan_mikronutrisi["mineral_(mg)"]["kalium_(mg)"]} mg)
+                            </Text>
+                            <Text style={nutritionScannerStyles.microNutrientName}>
+                                Natrium ({scanResult.estimasi_kandungan_mikronutrisi["mineral_(mg)"]["natrium_(mg)"]} mg)
+                            </Text>
+                            <Text style={nutritionScannerStyles.microNutrientName}>
+                                Zinc ({scanResult.estimasi_kandungan_mikronutrisi["mineral_(mg)"]["zinc_(mg)"]} mg)
+                            </Text>
+                            <Text style={nutritionScannerStyles.microNutrientName}>
+                                Yodium ({scanResult.estimasi_kandungan_mikronutrisi["mineral_(mg)"]["yodium_(mg)"]} mg)
+                            </Text>
                         </View>
 
                         {/* Kandungan Tambahan */}
                         <View style={nutritionScannerStyles.card}>
                             <Text style={nutritionScannerStyles.sectionTitle}>Kandungan Tambahan</Text>
-                            <Text style={nutritionScannerStyles.nutrientName}>Gula (12 g)</Text>
-                            <Text style={nutritionScannerStyles.nutrientName}>Garam (0.4 g)</Text>
-                            <Text style={nutritionScannerStyles.nutrientName}>Lemak Jenuh (1 g)</Text>
-                            <Text style={nutritionScannerStyles.nutrientName}>Lemak Trans (0 g)</Text>
-                            <Text style={nutritionScannerStyles.nutrientName}>Kafein (0 mg)</Text>
-                            <Text style={nutritionScannerStyles.nutrientName}>Kolesterol (5 mg)</Text>
+                            <Text style={nutritionScannerStyles.nutrientName}>
+                                Gula ({scanResult.estimasi_kandungan_tambahan["gula_(g)"]} g)
+                            </Text>
+                            <Text style={nutritionScannerStyles.nutrientName}>
+                                Garam ({scanResult.estimasi_kandungan_tambahan["garam_(g)"]} g)
+                            </Text>
+                            <Text style={nutritionScannerStyles.nutrientName}>
+                                Lemak Jenuh ({scanResult.estimasi_kandungan_tambahan["lemak_jenuh_(g)"]} g)
+                            </Text>
+                            <Text style={nutritionScannerStyles.nutrientName}>
+                                Lemak Trans ({scanResult.estimasi_kandungan_tambahan["lemak_trans_(g)"]} g)
+                            </Text>
+                            <Text style={nutritionScannerStyles.nutrientName}>
+                                Kafein ({scanResult.estimasi_kandungan_tambahan["kafein_(mg)"]} mg)
+                            </Text>
+                            <Text style={nutritionScannerStyles.nutrientName}>
+                                Kolesterol ({scanResult.estimasi_kandungan_tambahan["kolesterol_(mg)"]} mg)
+                            </Text>
                         </View>
 
                         {/* Total Kalori, Nutri Grade, Nutri Status, dan Keterangan */}
                         <View style={nutritionScannerStyles.card}>
                             <Text style={nutritionScannerStyles.totalCaloriesText}>
-                                Total Kalori: {activeTab === 'meal' ? '485' : '220'} kcal
+                                Total Kalori: {scanResult["estimasi_total_kalori_(kcal)"]} kcal
                             </Text>
 
                             <Text style={nutritionScannerStyles.gradeTextSimple}>
-                                Nutri Grade: {activeTab === 'meal' ? 'B+' : 'B'}
+                                Nutri Grade: {scanResult.nutri_grade}
                             </Text>
 
                             <Text style={nutritionScannerStyles.statusText}>
-                                Nutri Status: {activeTab === 'meal' ? 'Seimbang untuk Makan Siang' : 'Baik untuk Sarapan'}
+                                Nutri Status: {scanResult.nutri_status}
                             </Text>
 
                             <Text style={nutritionScannerStyles.descriptionLabel}>Keterangan:</Text>
                             <Text style={nutritionScannerStyles.descriptionText}>
-                                {activeTab === 'meal'
-                                    ? 'Nasi goreng ayam ini mengandung karbohidrat yang cukup untuk energi, protein dari ayam dan telur untuk pertumbuhan otot. Perhatikan kandungan lemak dan garam yang cukup tinggi.'
-                                    : 'Makanan ini mengandung karbohidrat kompleks yang baik untuk energi pagi hari. Kandungan protein dan kalsium dari susu mendukung pertumbuhan. Perhatikan kandungan gula yang cukup tinggi.'
-                                }
+                                {scanResult.keterangan}
                             </Text>
                         </View>
 

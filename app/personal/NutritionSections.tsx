@@ -46,16 +46,16 @@ export const NutritionSections: React.FC<NutritionSectionsProps> = ({ nutritionP
             <View style={personalStyles.section}>
                 <Text style={personalStyles.sectionTitle}>Kebutuhan Mikronutrisi</Text>
                 <Text style={[personalStyles.sectionTitle, { fontSize: 16, marginBottom: 8 }]}>
-                    Vitamin (mg/µg) per hari
+                    Vitamin (mg) per hari
                 </Text>
                 <View style={personalStyles.card}>
                     <View style={personalStyles.microRow}>
                         <Text style={personalStyles.microLabel}>Vitamin A</Text>
-                        <Text style={personalStyles.microValue}>{nutritionPlan.vitamins.vitaminA}µg</Text>
+                        <Text style={personalStyles.microValue}>{nutritionPlan.vitamins.vitaminA}mg</Text>
                     </View>
                     <View style={personalStyles.microRow}>
                         <Text style={personalStyles.microLabel}>Vitamin B Kompleks</Text>
-                        <Text style={personalStyles.microValue}>{nutritionPlan.vitamins.vitaminB}µg</Text>
+                        <Text style={personalStyles.microValue}>{nutritionPlan.vitamins.vitaminB}mg</Text>
                     </View>
                     <View style={personalStyles.microRow}>
                         <Text style={personalStyles.microLabel}>Vitamin C</Text>
@@ -63,7 +63,7 @@ export const NutritionSections: React.FC<NutritionSectionsProps> = ({ nutritionP
                     </View>
                     <View style={personalStyles.microRow}>
                         <Text style={personalStyles.microLabel}>Vitamin D</Text>
-                        <Text style={personalStyles.microValue}>{nutritionPlan.vitamins.vitaminD}µg</Text>
+                        <Text style={personalStyles.microValue}>{nutritionPlan.vitamins.vitaminD}mg</Text>
                     </View>
                     <View style={personalStyles.microRow}>
                         <Text style={personalStyles.microLabel}>Vitamin E</Text>
@@ -71,12 +71,12 @@ export const NutritionSections: React.FC<NutritionSectionsProps> = ({ nutritionP
                     </View>
                     <View style={personalStyles.microRow}>
                         <Text style={personalStyles.microLabel}>Vitamin K</Text>
-                        <Text style={personalStyles.microValue}>{nutritionPlan.vitamins.vitaminK}µg</Text>
+                        <Text style={personalStyles.microValue}>{nutritionPlan.vitamins.vitaminK}mg</Text>
                     </View>
                 </View>
 
                 <Text style={[personalStyles.sectionTitle, { fontSize: 16, marginBottom: 8, marginTop: 16 }]}>
-                    Mineral (mg/µg) per hari
+                    Mineral (mg) per hari
                 </Text>
                 <View style={personalStyles.card}>
                     <View style={personalStyles.microRow}>
@@ -105,7 +105,7 @@ export const NutritionSections: React.FC<NutritionSectionsProps> = ({ nutritionP
                     </View>
                     <View style={personalStyles.microRow}>
                         <Text style={personalStyles.microLabel}>Yodium</Text>
-                        <Text style={personalStyles.microValue}>{nutritionPlan.minerals.iodine}µg</Text>
+                        <Text style={personalStyles.microValue}>{nutritionPlan.minerals.iodine}mg</Text>
                     </View>
                 </View>
             </View>

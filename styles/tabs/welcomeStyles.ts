@@ -35,6 +35,12 @@ export const welcomeStyles = StyleSheet.create({
         lineHeight: 24,
         paddingHorizontal: 20,
     },
+    taglineText: {
+        fontSize: 16,
+        color: '#666666',
+        textAlign: 'center',
+        marginTop: 10,
+    },
     getStartedButton: {
         flexDirection: 'row',
         alignItems: 'center',

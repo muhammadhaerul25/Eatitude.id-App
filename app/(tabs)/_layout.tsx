@@ -13,17 +13,28 @@ export default function TabLayout() {
           backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
           borderTopColor: '#E5E7EB',
-          height: 60,
-          paddingBottom: 8,
+          height: 80,
+          paddingBottom: 12,
           paddingTop: 8,
+          margin: 0,
+          marginBottom: 0,
+          elevation: 0,
+          shadowOpacity: 0,
         },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '500',
+          marginTop: 2,
+          marginBottom: 4,
+        },
+        tabBarShowLabel: true,
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Meal',
           tabBarIcon: ({ size, color }) => (
-            <Calendar size={size} color={color} />
+            <Calendar size={18} color={color} />
           ),
         }}
       />
@@ -32,7 +43,7 @@ export default function TabLayout() {
         options={{
           title: 'Progress',
           tabBarIcon: ({ size, color }) => (
-            <BarChart3 size={size} color={color} />
+            <BarChart3 size={18} color={color} />
           ),
         }}
       />
@@ -41,7 +52,7 @@ export default function TabLayout() {
         options={{
           title: 'Consultation',
           tabBarIcon: ({ size, color }) => (
-            <MessageCircle size={size} color={color} />
+            <MessageCircle size={18} color={color} />
           ),
         }}
       />
@@ -50,7 +61,7 @@ export default function TabLayout() {
         options={{
           title: 'Personal',
           tabBarIcon: ({ size, color }) => (
-            <User size={size} color={color} />
+            <User size={18} color={color} />
           ),
         }}
       />
