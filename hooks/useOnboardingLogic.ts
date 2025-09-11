@@ -96,15 +96,15 @@ export const useOnboardingLogic = () => {
                 await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
                 await AsyncStorage.setItem('hasSeenWelcome', 'true');
 
-                // Navigate to main app
-                router.replace('/');
+                // Navigate to main app (tabs)
+                router.replace('/(tabs)');
             } else {
                 throw new Error(result.error || 'Failed to complete onboarding');
             }
 
             // Navigate to personal screen with plan ready
             console.log('🚀 Navigating to personal tab');
-            router.replace('/(tabs)/personal');
+            // router.replace('/(tabs)/personal'); // Remove this since we already navigate above
         } catch (error) {
             console.error('❌ Error during onboarding completion:', error);
 
@@ -122,7 +122,7 @@ export const useOnboardingLogic = () => {
                 [
                     {
                         text: 'Lanjutkan ke Aplikasi',
-                        onPress: () => router.replace('/'),
+                        onPress: () => router.replace('/(tabs)'),
                         style: 'default'
                     }
                 ]

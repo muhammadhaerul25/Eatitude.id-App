@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import LoadingOverlay from './LoadingOverlay';
+import { LoadingOverlay } from './LoadingOverlay';
 
 export const TestLoadingComponent: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);

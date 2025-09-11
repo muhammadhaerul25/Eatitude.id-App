@@ -21,7 +21,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import { ScanType, useFoodScanner, useFormattedNutrition } from '../../hooks/useFoodScanner';
+import { ScanType, useFoodScanner } from '../../hooks/useFoodScanner';
 import { nutritionScannerStyles } from '../../styles/tabs/nutritionScannerStyles';
 
 interface NutritionScannerProps {
@@ -43,12 +43,9 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
         scanError,
         confidence,
         clearResult,
-        clearError,
-        retry
-    } = useFoodScanner();
+        clearError    } = useFoodScanner();
 
     // Get formatted nutrition data
-    const formattedNutrition = useFormattedNutrition(scanResult);
 
     const handleImagePicker = async () => {
         try {
@@ -384,40 +381,41 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                                 {/* Camera/Scan Area for Label */}
                                 <View style={nutritionScannerStyles.scanArea}>
                                     <View style={nutritionScannerStyles.cameraContainer}>
-                                        {/* Nutrition Label Overlay */}
-                                        <View style={nutritionScannerStyles.nutritionLabel}>
-                                            <View style={nutritionScannerStyles.nutritionHeader}>
-                                                <Text style={nutritionScannerStyles.nutritionTitle}>Nutrition Facts</Text>
-                                                <Text style={nutritionScannerStyles.servingSize}>Serving Size 1/2 cup (114g)</Text>
-                                                <Text style={nutritionScannerStyles.servingSize}>Servings Per Container 4</Text>
-                                            </View>
+                                        {/* Show either placeholder nutrition label or selected image */}
+                                        {!imagePreview ? (
+                                            // Nutrition Label Placeholder
+                                            <View style={nutritionScannerStyles.nutritionLabel}>
+                                                <View style={nutritionScannerStyles.nutritionHeader}>
+                                                    <Text style={nutritionScannerStyles.nutritionTitle}>Nutrition Facts</Text>
+                                                    <Text style={nutritionScannerStyles.servingSize}>Serving Size 1/2 cup (114g)</Text>
+                                                    <Text style={nutritionScannerStyles.servingSize}>Servings Per Container 4</Text>
+                                                </View>
 
-                                            <View style={nutritionScannerStyles.caloriesSection}>
-                                                <View style={nutritionScannerStyles.caloriesRow}>
-                                                    <Text style={nutritionScannerStyles.caloriesLabel}>Calories</Text>
-                                                    <Text style={nutritionScannerStyles.caloriesValue}>200</Text>
+                                                <View style={nutritionScannerStyles.caloriesSection}>
+                                                    <View style={nutritionScannerStyles.caloriesRow}>
+                                                        <Text style={nutritionScannerStyles.caloriesLabel}>Calories</Text>
+                                                        <Text style={nutritionScannerStyles.caloriesValue}>200</Text>
+                                                    </View>
+                                                </View>
+
+                                                <View style={nutritionScannerStyles.nutritionDetails}>
+                                                    <View style={nutritionScannerStyles.dailyValueHeader}>
+                                                        <Text style={nutritionScannerStyles.dailyValueText}>% Daily Value*</Text>
+                                                    </View>
+                                                    <View style={nutritionScannerStyles.nutritionRow}>
+                                                        <Text style={nutritionScannerStyles.nutritionBold}>Total Fat</Text>
+                                                        <Text style={nutritionScannerStyles.nutritionBold}>8%</Text>
+                                                    </View>
+                                                    <View style={nutritionScannerStyles.nutritionRowIndent}>
+                                                        <Text style={nutritionScannerStyles.nutritionText}>Saturated Fat 1g</Text>
+                                                        <Text style={nutritionScannerStyles.nutritionBold}>5%</Text>
+                                                    </View>
                                                 </View>
                                             </View>
-
-                                            <View style={nutritionScannerStyles.nutritionDetails}>
-                                                <View style={nutritionScannerStyles.dailyValueHeader}>
-                                                    <Text style={nutritionScannerStyles.dailyValueText}>% Daily Value*</Text>
-                                                </View>
-                                                <View style={nutritionScannerStyles.nutritionRow}>
-                                                    <Text style={nutritionScannerStyles.nutritionBold}>Total Fat</Text>
-                                                    <Text style={nutritionScannerStyles.nutritionBold}>8%</Text>
-                                                </View>
-                                                <View style={nutritionScannerStyles.nutritionRowIndent}>
-                                                    <Text style={nutritionScannerStyles.nutritionText}>Saturated Fat 1g</Text>
-                                                    <Text style={nutritionScannerStyles.nutritionBold}>5%</Text>
-                                                </View>
-                                            </View>
-                                        </View>
-
-                                        {/* Image Preview Section */}
-                                        {imagePreview && (
+                                        ) : (
+                                            // Selected Image Preview
                                             <View style={nutritionScannerStyles.imagePreviewContainer}>
-                                                <Text style={nutritionScannerStyles.sectionTitle}>Selected Image</Text>
+                                                <Text style={nutritionScannerStyles.sectionTitle}>Selected Label Image</Text>
                                                 <View style={nutritionScannerStyles.imageWrapper}>
                                                     <Image
                                                         source={{ uri: imagePreview }}

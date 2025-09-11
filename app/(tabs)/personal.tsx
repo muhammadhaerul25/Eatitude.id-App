@@ -7,10 +7,11 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { router } from 'expo-router';
 
-import NutritionSections from '../../components/personal/NutritionSections';
-import ProfileSection from '../../components/personal/ProfileSection';
-import StatusSection from '../../components/personal/StatusSection';
+import { NutritionSections } from '../../components/personal/NutritionSections';
+import { ProfileSection } from '../../components/personal/ProfileSection';
+import { StatusSection } from '../../components/personal/StatusSection';
 import { usePersonalLogic } from '../../hooks/usePersonalLogic';
 import { personalStyles } from '../../styles/tabs/personalStyles';
 
@@ -97,9 +98,12 @@ export default function PersonalScreen() {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={personalStyles.actionButton}>
+            <TouchableOpacity 
+            style={personalStyles.actionButton}
+            onPress={() => router.push('/(tabs)/progress')}
+            >
             <Text style={personalStyles.actionButtonText}>Lihat Progress</Text>
-          </TouchableOpacity>
+            </TouchableOpacity>
         </View>
 
         <View style={personalStyles.bottomSpacing} />

@@ -32,7 +32,7 @@ export function NutritionAdvisorButton({
     onAdviceReceived,
     style
 }: NutritionAdvisorButtonProps) {
-    const { generateAdvice, isLoading, nutritionAdvice, error } = useNutritionAdvisor();
+    const { generateAdvice, isLoading, nutritionAdvice } = useNutritionAdvisor();
 
     const handleGenerateAdvice = async () => {
         try {
@@ -45,6 +45,7 @@ export function NutritionAdvisorButton({
             }
         } catch (err) {
             Alert.alert('Error', 'Failed to generate nutrition advice. Please try again.');
+            Alert.alert('Error', String(err));
         }
     };
 
@@ -125,7 +126,7 @@ export function NutritionAdvisorButton({
  * Example of how to integrate into existing consultation component
  */
 export function ConsultationWithNutritionAdvisor() {
-    const [messages, setMessages] = useState<Array<{ id: string; text: string; isUser: boolean; timestamp: Date }>>([
+    const [messages, setMessages] = useState<{ id: string; text: string; isUser: boolean; timestamp: Date }[]>([
         {
             id: '1',
             text: 'Hello! I\'m your nutrition assistant. How can I help you today?',

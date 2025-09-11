@@ -137,7 +137,6 @@ export async function scanFoodNutrition(imageFile: File): Promise<FoodScannerRes
         }
 
         // Convert image to base64
-        const base64Image = await convertImageToBase64(imageFile);
         console.log('📷 Image converted to base64');
 
         // Prepare form data (FastAPI expects multipart/form-data for file uploads)
