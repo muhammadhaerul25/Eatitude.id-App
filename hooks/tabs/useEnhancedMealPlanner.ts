@@ -37,9 +37,11 @@ export interface MealItem {
 
 // Helper function to convert DailyMealPlan to MealItem array
 const mapMealPlanToItems = (mealPlan: DailyMealPlan): MealItem[] => {
+    console.log('🔄 Mapping meal plan to items:', JSON.stringify(mealPlan, null, 2));
     const items: MealItem[] = [];
 
     if (mealPlan.sarapan) {
+        console.log('🍳 Sarapan target calories:', mealPlan.sarapan.target_kalori_kcal);
         items.push({
             id: 'sarapan',
             type: 'sarapan',
@@ -57,6 +59,7 @@ const mapMealPlanToItems = (mealPlan: DailyMealPlan): MealItem[] => {
     }
 
     if (mealPlan.snack_pagi_opsional) {
+        console.log('🥨 Snack Pagi target calories:', mealPlan.snack_pagi_opsional.target_kalori_kcal);
         items.push({
             id: 'snack_pagi',
             type: 'snack_pagi',
@@ -185,7 +188,9 @@ export const useEnhancedMealPlanner = (): UseMealPlannerReturn => {
             const result: MealPlanServiceResult = await Promise.race([loadPromise, timeoutPromise]);
 
             if (result.success && result.data) {
+                console.log('✅ Meal plan service returned data:', JSON.stringify(result.data, null, 2));
                 const mealItems = mapMealPlanToItems(result.data);
+                console.log('🍽️ Mapped meal items:', mealItems.map(m => ({ id: m.id, targetKalori: m.targetKalori })));
 
                 // Load any existing meal statuses from storage
                 const mealItemsWithStatus = await loadMealStatuses(date, mealItems);
@@ -471,8 +476,12 @@ export const useEnhancedMealPlanner = (): UseMealPlannerReturn => {
                 // Try to extract daily calorie target from personal plan
                 const kaloriData = cache.personal_plan.kebutuhan_kalori;
 
-                // Handle different possible formats
-                if (typeof kaloriData === 'number') {
+                // Handle the correct API format first
+                if (typeof kaloriData === 'object' && kaloriData["total_kalori_per_hari_(kcal)"]) {
+                    return kaloriData["total_kalori_per_hari_(kcal)"];
+                }
+                // Handle different possible legacy formats
+                else if (typeof kaloriData === 'number') {
                     return kaloriData;
                 } else if (typeof kaloriData === 'object' && kaloriData.harian) {
                     return kaloriData.harian;

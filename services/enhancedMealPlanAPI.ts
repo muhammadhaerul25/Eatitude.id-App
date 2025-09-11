@@ -112,6 +112,7 @@ export class MealPlanService {
                 requestBody.personal_plan
             );
 
+            console.log('🍽️ Raw API response for meal plan:', JSON.stringify(response, null, 2));
             console.log('✅ MealPlanService: Daily meal plan generated successfully');
 
             return {
@@ -450,11 +451,12 @@ export class MealPlanService {
      * Convert API meal plan format to cached meals format
      */
     private convertAPIMealsToCached(apiMealPlan: DailyMealPlan): { [mealType: string]: CachedMeal } {
+        console.log('🔄 Converting API meals to cached format:', JSON.stringify(apiMealPlan, null, 2));
         const cachedMeals: { [mealType: string]: CachedMeal } = {};
 
         // Helper function to convert individual meal
         const convertMeal = (mealType: string, meal: MealPlanMeal): CachedMeal => {
-            return {
+            const cached: CachedMeal = {
                 range_waktu: meal.range_waktu,
                 deskripsi_rekomendasi_menu: meal.deskripsi_rekomendasi_menu,
                 list_pilihan_menu: meal.list_pilihan_menu,
@@ -462,6 +464,8 @@ export class MealPlanService {
                 "target_kalori_(kcal)": meal.target_kalori_kcal,
                 status: 'planned',
             };
+            console.log(`🍽️ Converting ${mealType}: ${meal.target_kalori_kcal} kcal -> ${cached["target_kalori_(kcal)"]} kcal`);
+            return cached;
         };
 
         // Convert each meal type
@@ -494,13 +498,15 @@ export class MealPlanService {
     private convertCachedMealsToAPI(cachedMeals: { [mealType: string]: CachedMeal }): DailyMealPlan {
         // Helper function to convert individual cached meal back to API format
         const convertCachedMeal = (cachedMeal: CachedMeal): MealPlanMeal => {
-            return {
+            const converted = {
                 range_waktu: cachedMeal.range_waktu,
                 deskripsi_rekomendasi_menu: cachedMeal.deskripsi_rekomendasi_menu,
                 list_pilihan_menu: cachedMeal.list_pilihan_menu,
                 asupan_cairan_air_gelas: cachedMeal["asupan_cairan_(air_gelas)"],
                 target_kalori_kcal: cachedMeal["target_kalori_(kcal)"],
             };
+            console.log(`🔄 Converting cached meal - Original: ${cachedMeal["target_kalori_(kcal)"]} -> Converted: ${converted.target_kalori_kcal}`);
+            return converted;
         };
 
         const apiMealPlan: DailyMealPlan = {
