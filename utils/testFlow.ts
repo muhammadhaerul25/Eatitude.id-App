@@ -10,19 +10,19 @@ export const testOnboardingFlow = async () => {
 
     // Sample user profile from onboarding
     const sampleProfile = {
-        name: 'Muhammad Haerul',
-        age: 22,
-        gender: 'male' as const,
-        weight: 62,
-        height: 167,
-        activityLevel: 'light' as const,
-        activityNotes: 'Olahraga ringan 3x seminggu',
-        wakeTime: '07:00',
-        sleepTime: '22:00',
-        foodPreferences: 'Makanan sehat',
-        allergies: 'Tidak ada alergi',
-        healthConditions: 'Sehat',
-        goal: 'improve_health' as const,
+        nama: 'Muhammad Haerul',
+        usia: 22,
+        jenis_kelamin: 'male' as const,
+        berat_badan: 62,
+        tinggi_badan: 167,
+        tingkat_aktivitas: 'light' as const,
+        catatan_aktivitas: 'Olahraga ringan 3x seminggu',
+        waktu_bangun: '07:00',
+        waktu_tidur: '22:00',
+        preferensi_makanan: 'Makanan sehat',
+        alergi_makanan: 'Tidak ada alergi',
+        kondisi_kesehatan: 'Sehat',
+        tujuan: 'improve_health' as const,
     };
 
     try {
@@ -79,27 +79,27 @@ export const testDataMapping = () => {
     console.log('🧪 Testing Data Mapping...');
 
     const sampleProfile = {
-        name: 'Test User',
-        age: 25,
-        gender: 'female' as const,
-        weight: 55,
-        height: 160,
-        activityLevel: 'moderate' as const,
-        activityNotes: 'Regular exercise',
-        wakeTime: '06:30',
-        sleepTime: '23:00',
-        foodPreferences: 'Vegetarian',
-        allergies: 'Nuts',
-        healthConditions: 'Healthy',
-        goal: 'lose_weight' as const,
+        nama: 'Test User',
+        usia: 25,
+        jenis_kelamin: 'female' as const,
+        berat_badan: 55,
+        tinggi_badan: 160,
+        tingkat_aktivitas: 'moderate' as const,
+        catatan_aktivitas: 'Regular exercise',
+        waktu_bangun: '06:30',
+        waktu_tidur: '23:00',
+        preferensi_makanan: 'Vegetarian',
+        alergi_makanan: 'Nuts',
+        kondisi_kesehatan: 'Healthy',
+        tujuan: 'lose_weight' as const,
     };
 
     const userData = mapUserProfileToApiData(sampleProfile);
 
     // Verify mapping correctness
     const tests = [
-        { test: 'Name mapping', pass: userData.nama === sampleProfile.name },
-        { test: 'Age mapping', pass: userData.usia === sampleProfile.age },
+        { test: 'Name mapping', pass: userData.nama === sampleProfile.nama },
+        { test: 'Age mapping', pass: userData.usia === sampleProfile.usia },
         { test: 'Gender mapping', pass: userData.jenis_kelamin === 'perempuan' },
         { test: 'Activity mapping', pass: userData.tingkat_aktivitas === 'sedang' },
         { test: 'Goal mapping', pass: userData.tujuan === 'menurunkan_berat_badan' },

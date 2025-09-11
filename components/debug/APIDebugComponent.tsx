@@ -14,8 +14,8 @@ import {
     View
 } from 'react-native';
 
-import { apiService } from '../services/api';
-import { createUserData, generatePersonalPlan } from '../services/personalPlanAPI';
+import { apiService } from '../../services/api';
+import { createUserData, generatePersonalPlan } from '../../services/personalPlanAPI';
 
 export const APIDebugComponent: React.FC = () => {
     const [debugLog, setDebugLog] = useState<string[]>([]);

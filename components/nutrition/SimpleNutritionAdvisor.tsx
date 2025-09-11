@@ -8,8 +8,8 @@
 import { Bot, Zap } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from 'react-native';
-import { useNutritionAdvisor } from '../hooks/useNutritionAdvisor';
-import { MealPlan, PersonalPlan, UserData, UserProgress } from '../services/nutritionAdvisorAPI';
+import { useNutritionAdvisor } from '../../hooks/useNutritionAdvisor';
+import { MealPlan, PersonalPlan, UserData, UserProgress } from '../../services/nutritionAdvisorAPI';
 
 interface NutritionAdvisorButtonProps {
     userData: UserData;

@@ -184,7 +184,7 @@ export async function testNutritionAdvisor() {
             console.log('✅ Test PASSED!');
             console.log(`⏱️ Duration: ${duration}ms`);
             console.log('📝 Generated Advice:');
-            console.log(JSON.stringify(result.data.nutrition_advice, null, 2));
+            console.log(JSON.stringify(result.data.insight, null, 2));
 
             // Create formatted prompt for reference
             const prompt = nutritionAdvisorService.createPrompt(
@@ -199,7 +199,7 @@ export async function testNutritionAdvisor() {
             return {
                 success: true,
                 duration,
-                advice: result.data.nutrition_advice,
+                advice: result.data.insight,
                 prompt
             };
         } else {

@@ -194,10 +194,10 @@ user_progress_per_day = {
 # print(type(meal_info))
 
 # scan ingredient
-byteplus_processor = BytePlusProcessor()
-ingredient_info = LabelInformasiGiziScanner.generate_label_informasi_gizi_nutrition_estimation(r"C:\Users\mamat\Eatitude.id-App\ai_core\images\label_gizi1.jpg")
-print(json.dumps(ingredient_info, indent=4, ensure_ascii=False))
-print(type(ingredient_info))
+# byteplus_processor = BytePlusProcessor()
+# ingredient_info = LabelInformasiGiziScanner.generate_label_informasi_gizi_nutrition_estimation(r"C:\Users\mamat\Eatitude.id-App\ai_core\images\label_gizi1.jpg")
+# print(json.dumps(ingredient_info, indent=4, ensure_ascii=False))
+# print(type(ingredient_info))
 
 # create nutrition advisor
 # nutrition_advisor = NutritionAdvisor.generate_nutrition_advisor(user_data, user_personal_plan, user_meal_plan_per_day, user_progress_per_day, r"D:\Eatitude.id\Eatitude.id\ai-core\images\nasi_ayam.jpg")

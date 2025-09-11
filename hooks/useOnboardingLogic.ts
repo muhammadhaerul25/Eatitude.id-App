@@ -2,9 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert } from 'react-native';
-import { mapPersonalPlanToNutritionPlan, mapUserProfileToApiData } from '../services/dataMapper';
-import { generatePersonalPlanWithRetry, PersonalPlanAPIError } from '../services/personalPlanAPI';
-import { defaultProfile, steps, UserProfile, validateAge, validateHeight, validateTime, validateWeight } from './onboardingTypes';
+import { dataIntegration } from '../services/dataIntegrationService';
+import { defaultProfile, steps, UserProfile, validateBeratBadan, validateTinggiBadan, validateUsia, validateWaktu } from './onboardingTypes';
 
 export const useOnboardingLogic = () => {
     const router = useRouter();
@@ -15,46 +14,46 @@ export const useOnboardingLogic = () => {
     const validateCurrentStep = (): boolean => {
         switch (currentStep) {
             case 0:
-                if (profile.name.trim() === '') {
-                    Alert.alert('Validation Error', 'Please enter your name.');
+                if (profile.nama.trim() === '') {
+                    Alert.alert('Validation Error', 'Silakan masukkan nama Anda.');
                     return false;
                 }
-                if (!validateAge(profile.age)) {
-                    Alert.alert('Validation Error', 'Please enter a valid age (1-120 years).');
+                if (!validateUsia(profile.usia)) {
+                    Alert.alert('Validation Error', 'Silakan masukkan usia yang valid (1-120 tahun).');
                     return false;
                 }
-                if (profile.gender === '') {
-                    Alert.alert('Validation Error', 'Please select your gender.');
+                if (profile.jenis_kelamin === '') {
+                    Alert.alert('Validation Error', 'Silakan pilih jenis kelamin Anda.');
                     return false;
                 }
                 return true;
             case 1:
-                if (!validateWeight(profile.weight)) {
-                    Alert.alert('Validation Error', 'Please enter a valid weight (20-500 kg).');
+                if (!validateBeratBadan(profile.berat_badan)) {
+                    Alert.alert('Validation Error', 'Silakan masukkan berat badan yang valid (20-500 kg).');
                     return false;
                 }
-                if (!validateHeight(profile.height)) {
-                    Alert.alert('Validation Error', 'Please enter a valid height (50-250 cm).');
+                if (!validateTinggiBadan(profile.tinggi_badan)) {
+                    Alert.alert('Validation Error', 'Silakan masukkan tinggi badan yang valid (50-250 cm).');
                     return false;
                 }
                 return true;
             case 2:
-                if (profile.activityLevel === '') {
-                    Alert.alert('Validation Error', 'Please select your activity level.');
+                if (profile.tingkat_aktivitas === '') {
+                    Alert.alert('Validation Error', 'Silakan pilih tingkat aktivitas Anda.');
                     return false;
                 }
-                if (!validateTime(profile.wakeTime)) {
-                    Alert.alert('Validation Error', 'Please enter a valid wake time (HH:MM format).');
+                if (!validateWaktu(profile.waktu_bangun)) {
+                    Alert.alert('Validation Error', 'Silakan masukkan waktu bangun yang valid (format HH:MM).');
                     return false;
                 }
-                if (!validateTime(profile.sleepTime)) {
-                    Alert.alert('Validation Error', 'Please enter a valid sleep time (HH:MM format).');
+                if (!validateWaktu(profile.waktu_tidur)) {
+                    Alert.alert('Validation Error', 'Silakan masukkan waktu tidur yang valid (format HH:MM).');
                     return false;
                 }
                 return true;
             case 3:
-                if (profile.goal === '') {
-                    Alert.alert('Validation Error', 'Please select your goal.');
+                if (profile.tujuan === '') {
+                    Alert.alert('Validation Error', 'Silakan pilih tujuan kesehatan Anda.');
                     return false;
                 }
                 return true;
@@ -66,98 +65,65 @@ export const useOnboardingLogic = () => {
     const completeOnboarding = async (): Promise<void> => {
         setIsGeneratingPlan(true);
         try {
-            // Save basic onboarding completion first
-            await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
-            await AsyncStorage.setItem('hasSeenWelcome', 'true');
-            await AsyncStorage.setItem('userProfile', JSON.stringify(profile));
+            console.log('🚀 Starting onboarding completion with data integration service...');
 
-            console.log('🚀 Starting nutrition plan generation...');
-
-            // Generate nutrition plan using the new API integration
-            const userData = mapUserProfileToApiData(profile);
-            console.log('📊 User data for API:', userData);
-
-            // Create a promise that keeps the UI responsive during long API calls
-            const generatePlanWithProgress = async () => {
-                // Set up periodic UI updates to prevent freezing
-                const progressInterval = setInterval(() => {
-                    console.log('⏳ Still generating plan... Please wait');
-                    // Force a re-render to keep loading animation active
-                    setIsGeneratingPlan(true);
-                }, 5000); // Update every 5 seconds
-
-                try {
-                    // Use the API service with extended timeout (60 seconds)
-                    console.log('🔄 Calling API with extended timeout...');
-                    const apiPlan = await generatePersonalPlanWithRetry(userData, 2, 60000); // 2 retries, 3 second delay
-
-                    clearInterval(progressInterval);
-                    return apiPlan;
-                } catch (error) {
-                    clearInterval(progressInterval);
-                    throw error;
-                }
+            // Create onboarding data in the new format
+            const onboardingData = {
+                nama: profile.nama,
+                usia: profile.usia || 0,
+                jenis_kelamin: profile.jenis_kelamin,
+                berat_badan: profile.berat_badan || 0,
+                tinggi_badan: profile.tinggi_badan || 0,
+                tingkat_aktivitas: profile.tingkat_aktivitas,
+                catatan_aktivitas: profile.catatan_aktivitas,
+                waktu_bangun: profile.waktu_bangun,
+                waktu_tidur: profile.waktu_tidur,
+                preferensi_makanan: profile.preferensi_makanan,
+                alergi_makanan: profile.alergi_makanan,
+                kondisi_kesehatan: profile.kondisi_kesehatan,
+                tujuan: profile.tujuan,
             };
 
-            const apiPlan = await generatePlanWithProgress();
+            console.log('📊 Onboarding data prepared:', onboardingData);
 
-            console.log('✅ API response received:', apiPlan);
+            // Use the data integration service to complete onboarding
+            const result = await dataIntegration.completeOnboarding(onboardingData);
 
-            const mappedPlan = mapPersonalPlanToNutritionPlan(apiPlan);
-            console.log('🔄 Mapped plan:', mappedPlan);
+            if (result.success) {
+                console.log('✅ Onboarding completed successfully with data integration service');
 
-            // Save the generated plan
-            await AsyncStorage.setItem('nutritionPlan', JSON.stringify(mappedPlan));
-            console.log('💾 Plan saved successfully');
+                // Save basic onboarding completion flags
+                await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
+                await AsyncStorage.setItem('hasSeenWelcome', 'true');
 
-            // Mark onboarding as completed FIRST
-            await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
-            await AsyncStorage.setItem('hasSeenWelcome', 'true');
-            console.log('✅ Onboarding marked as completed');
+                // Navigate to main app
+                router.replace('/');
+            } else {
+                throw new Error(result.error || 'Failed to complete onboarding');
+            }
 
             // Navigate to personal screen with plan ready
             console.log('🚀 Navigating to personal tab');
-
-            // Navigate immediately - the layout will handle the state properly
             router.replace('/(tabs)/personal');
         } catch (error) {
             console.error('❌ Error during onboarding completion:', error);
 
-            // Always ensure onboarding is marked complete
+            // Always ensure onboarding is marked complete so user isn't stuck
             await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
             await AsyncStorage.setItem('hasSeenWelcome', 'true');
 
-            // Handle specific error types from the new API integration
-            let errorMessage = 'There was an issue generating your nutrition plan. Your profile has been saved and you can generate the plan manually from the Personal tab.';
-
-            if (error instanceof PersonalPlanAPIError) {
-                switch (error.code) {
-                    case 'VALIDATION_ERROR':
-                        errorMessage = 'Please check your profile information and try generating the plan again from the Personal tab.';
-                        break;
-                    case 'NETWORK_ERROR':
-                        errorMessage = 'Network connection issue. Your profile has been saved and you can generate the plan from the Personal tab when you have a stable connection.';
-                        break;
-                    case 'TIMEOUT_ERROR':
-                        errorMessage = 'The nutrition plan generation is taking longer than expected. Your profile has been saved and you can generate the plan from the Personal tab.';
-                        break;
-                    case 'SERVER_ERROR':
-                        errorMessage = 'Server error occurred. Your profile has been saved and you can try generating the plan again from the Personal tab.';
-                        break;
-                    default:
-                        errorMessage = error.message || errorMessage;
-                }
-            } else if (error instanceof Error) {
-                errorMessage = error.message || errorMessage;
-            }
+            // Show user-friendly error message
+            const errorMessage = error instanceof Error ? error.message :
+                'Terjadi masalah saat menyelesaikan onboarding. Anda bisa melanjutkan dan mengatur profil dari menu Personal.';
 
             Alert.alert(
-                'Onboarding Completed',
+                'Onboarding Error',
                 errorMessage,
                 [
                     {
-                        text: 'Continue to App',
-                        onPress: () => router.replace('/(tabs)/personal')
+                        text: 'Lanjutkan ke Aplikasi',
+                        onPress: () => router.replace('/'),
+                        style: 'default'
                     }
                 ]
             );
@@ -187,7 +153,7 @@ export const useOnboardingLogic = () => {
     const selectGoal = (goalKey: string): void => {
         setProfile((prev: UserProfile) => ({
             ...prev,
-            goal: goalKey as UserProfile['goal']
+            tujuan: goalKey as UserProfile['tujuan']
         }));
     };
 

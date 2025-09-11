@@ -1,8 +1,8 @@
 import { Clock } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
-import { validateTime } from '../hooks/onboardingTypes';
-import { onboardingStyles as styles } from '../styles/tabs/onboardingStyles';
+import { validateWaktu } from '../../hooks/onboardingTypes';
+import { onboardingStyles as styles } from '../../styles/tabs/onboardingStyles';
 
 interface TimeInputProps {
     label: string;
@@ -40,7 +40,7 @@ export const TimeInput: React.FC<TimeInputProps> = ({
 
             // Validate complete time
             if (formattedTime.length === 5) {
-                if (!validateTime(formattedTime)) {
+                if (!validateWaktu(formattedTime)) {
                     setError('Please enter a valid time (00:00 - 23:59)');
                 } else {
                     setError('');

@@ -1,5 +1,5 @@
 import { TriangleAlert as AlertTriangle, Bell, Bot, Send, TrendingUp, User } from 'lucide-react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -94,7 +94,7 @@ export default function ConsultScreen() {
         getQuickAnalysis();
       }, 1000); // Small delay to let the component settle
     }
-  }, [profile, nutritionPlan]); // Dependencies: trigger when profile or nutrition plan changes
+  }, [profile, nutritionPlan]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle nutrition advice response
   useEffect(() => {
@@ -221,7 +221,7 @@ export default function ConsultScreen() {
   };
 
   // Convert app data to API format
-  const prepareUserDataForAPI = (): UserData | null => {
+  const prepareUserDataForAPI = useCallback((): UserData | null => {
     if (!profile) return null;
 
     // Map gender values
@@ -249,40 +249,40 @@ export default function ConsultScreen() {
     };
 
     return {
-      nama: profile.name || 'User',
-      usia: profile.age || 25,
-      jenis_kelamin: genderMap[profile.gender as keyof typeof genderMap] || 'Laki-laki',
-      berat_badan: profile.weight || 70,
-      tinggi_badan: profile.height || 170,
-      tingkat_aktivitas: activityLevelMap[profile.activityLevel as keyof typeof activityLevelMap] || 'Sedang',
-      catatan_aktivitas: profile.activityNotes || null,
-      waktu_bangun: profile.wakeTime || '07:00',
-      waktu_tidur: profile.sleepTime || '22:00',
-      preferensi_makanan: profile.foodPreferences || null,
-      alergi_makanan: profile.allergies || null,
-      kondisi_kesehatan: profile.healthConditions || null,
-      tujuan: goalMap[profile.goal as keyof typeof goalMap] || 'Meningkatkan kesehatan'
+      nama: profile.nama || 'User',
+      usia: profile.usia || 25,
+      jenis_kelamin: genderMap[profile.jenis_kelamin as keyof typeof genderMap] || 'Laki-laki',
+      berat_badan: profile.berat_badan || 70,
+      tinggi_badan: profile.tinggi_badan || 170,
+      tingkat_aktivitas: activityLevelMap[profile.tingkat_aktivitas as keyof typeof activityLevelMap] || 'Sedang',
+      catatan_aktivitas: profile.catatan_aktivitas || null,
+      waktu_bangun: profile.waktu_bangun || '07:00',
+      waktu_tidur: profile.waktu_tidur || '22:00',
+      preferensi_makanan: profile.preferensi_makanan || null,
+      alergi_makanan: profile.alergi_makanan || null,
+      kondisi_kesehatan: profile.kondisi_kesehatan || null,
+      tujuan: goalMap[profile.tujuan as keyof typeof goalMap] || 'Meningkatkan kesehatan'
     };
-  };
+  }, [profile]);
 
-  const preparePersonalPlanForAPI = (): PersonalPlan | null => {
+  const preparePersonalPlanForAPI = useCallback((): PersonalPlan | null => {
     if (!nutritionPlan) return null;
 
     return {
       kebutuhan_kalori: {
-        total_kalori_per_hari_kcal: nutritionPlan.calories || 2000
+        total_kalori_per_hari_kcal: nutritionPlan.kebutuhan_kalori?.["total_kalori_per_hari_(kcal)"] || 2000
       },
       kebutuhan_makronutrisi: {
-        karbohidrat_per_hari_g: nutritionPlan.macros?.carbs || 250,
-        protein_per_hari_g: nutritionPlan.macros?.protein || 100,
-        lemak_per_hari_g: nutritionPlan.macros?.fat || 60,
-        serat_per_hari_g: nutritionPlan.macros?.fiber || 25
+        karbohidrat_per_hari_g: nutritionPlan.kebutuhan_makronutrisi?.["karbohidrat_per_hari_(g)"] || 250,
+        protein_per_hari_g: nutritionPlan.kebutuhan_makronutrisi?.["protein_per_hari_(g)"] || 100,
+        lemak_per_hari_g: nutritionPlan.kebutuhan_makronutrisi?.["lemak_per_hari_(g)"] || 60,
+        serat_per_hari_g: nutritionPlan.kebutuhan_makronutrisi?.["serat_per_hari_(g)"] || 25
       },
       kebutuhan_mikronutrisi: {
-        vitamin_a_per_hari_mg: nutritionPlan.vitamins?.vitaminA || 0.9,
-        vitamin_c_per_hari_mg: nutritionPlan.vitamins?.vitaminC || 90,
-        kalsium_per_hari_mg: nutritionPlan.minerals?.calcium || 1000,
-        zat_besi_per_hari_mg: nutritionPlan.minerals?.iron || 8
+        vitamin_a_per_hari_mg: nutritionPlan.kebutuhan_mikronutrisi?.["vitamin_a_per_hari_(mg)"] || 0.9,
+        vitamin_c_per_hari_mg: nutritionPlan.kebutuhan_mikronutrisi?.["vitamin_c_per_hari_(mg)"] || 90,
+        kalsium_per_hari_mg: nutritionPlan.kebutuhan_mikronutrisi?.["kalsium_per_hari_(mg)"] || 1000,
+        zat_besi_per_hari_mg: nutritionPlan.kebutuhan_mikronutrisi?.["zat_besi_per_hari_(mg)"] || 8
       },
       batasi_konsumsi: {
         gula_per_hari_sdm: 4,
@@ -290,12 +290,12 @@ export default function ConsultScreen() {
         kafein_per_hari_cangkir: 4
       },
       kebutuhan_cairan: {
-        air_per_hari_liter: nutritionPlan.hydration?.liters || 2.5,
-        air_per_hari_gelas: nutritionPlan.hydration?.glasses || 10
+        air_per_hari_liter: nutritionPlan.hidrasi?.liter || 2.5,
+        air_per_hari_gelas: nutritionPlan.hidrasi?.gelas || 10
       },
-      catatan: `Personalized nutrition plan for ${profile?.name || 'user'} with ${nutritionPlan.calories || 2000} calories daily target.`
+      catatan: `Personalized nutrition plan for ${profile?.nama || 'user'} with ${nutritionPlan.kalori || 2000} calories daily target.`
     };
-  };
+  }, [nutritionPlan, profile?.nama]);
 
   const prepareMealPlanForAPI = (): MealPlan => {
     // Use sample meal plan if not available
@@ -365,7 +365,6 @@ export default function ConsultScreen() {
     };
 
     setMessages(prev => [...prev, newMessage]);
-    const userQuestion = inputText.trim();
     setInputText('');
 
     // Scroll to show user message immediately
@@ -406,7 +405,7 @@ export default function ConsultScreen() {
   };
 
   // Quick analysis function
-  const getQuickAnalysis = async () => {
+  const getQuickAnalysis = useCallback(async () => {
     const userData = prepareUserDataForAPI();
     const personalPlan = preparePersonalPlanForAPI();
     const mealPlan = prepareMealPlanForAPI();
@@ -443,7 +442,7 @@ export default function ConsultScreen() {
     } finally {
       setIsLoadingAnalysis(false);
     }
-  };
+  }, [prepareUserDataForAPI, preparePersonalPlanForAPI, generateAdvice]);
 
   const getInsightStyle = (type: string) => {
     switch (type) {
@@ -481,7 +480,7 @@ export default function ConsultScreen() {
         <ScrollView style={consultationTabStyles.content} showsVerticalScrollIndicator={false}>
           {/* Today's Insights */}
           <View style={consultationTabStyles.section}>
-            <Text style={consultationTabStyles.sectionTitle}>Today's Analysis</Text>
+            <Text style={consultationTabStyles.sectionTitle}>Today&apos;s Analysis</Text>
 
             {isGeneratingAdvice || isLoadingAnalysis ? (
               <View style={[
@@ -551,7 +550,7 @@ export default function ConsultScreen() {
                   <Text style={consultationTabStyles.insightTitle}>No Analysis Available</Text>
                 </View>
                 <Text style={consultationTabStyles.insightDescription}>
-                  Get your personalized nutrition analysis by clicking "Get AI Nutrition Analysis" below.
+                  Get your personalized nutrition analysis by clicking &quot;Get AI Nutrition Analysis&quot; below.
                   Our AI will analyze your profile and meal plans to provide insights, recommendations, and alerts.
                 </Text>
                 <TouchableOpacity

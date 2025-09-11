@@ -30,7 +30,7 @@ export const useNutritionScanner = () => {
             }
 
             const formatted = type === 'meal'
-                ? formatNutritionData(result.informasi_nutrisi)
+                ? formatNutritionData((result as any).informasi_nutrisi)
                 : formatNutritionData(result);
 
             const scanResult: ScanResult = {

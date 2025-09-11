@@ -1,51 +1,51 @@
 export interface UserProfile {
-    name: string;
-    age: number | null;
-    gender: 'male' | 'female' | '';
-    weight: number | null;
-    height: number | null;
-    activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' | '';
-    activityNotes: string;
-    wakeTime: string; // format: "HH:MM"
-    sleepTime: string; // format: "HH:MM"
-    foodPreferences: string;
-    allergies: string;
-    healthConditions: string;
-    goal: 'improve_health' | 'maintain_weight' | 'lose_weight' | 'gain_weight' | 'manage_disease' | '';
+    nama: string;
+    usia: number | null;
+    jenis_kelamin: 'male' | 'female' | '';
+    berat_badan: number | null;
+    tinggi_badan: number | null;
+    tingkat_aktivitas: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' | '';
+    catatan_aktivitas: string;
+    waktu_bangun: string; // format: "HH:MM"
+    waktu_tidur: string; // format: "HH:MM"
+    preferensi_makanan: string;
+    alergi_makanan: string;
+    kondisi_kesehatan: string;
+    tujuan: 'improve_health' | 'maintain_weight' | 'lose_weight' | 'gain_weight' | 'manage_disease' | '';
 }
 
 export const defaultProfile: UserProfile = {
-    name: '',
-    age: null,
-    gender: '',
-    weight: null,
-    height: null,
-    activityLevel: '',
-    activityNotes: '',
-    wakeTime: '06:00',
-    sleepTime: '22:00',
-    foodPreferences: '',
-    allergies: '',
-    healthConditions: '',
-    goal: '',
+    nama: '',
+    usia: null,
+    jenis_kelamin: '',
+    berat_badan: null,
+    tinggi_badan: null,
+    tingkat_aktivitas: '',
+    catatan_aktivitas: '',
+    waktu_bangun: '06:00',
+    waktu_tidur: '22:00',
+    preferensi_makanan: '',
+    alergi_makanan: '',
+    kondisi_kesehatan: '',
+    tujuan: '',
 };
 
 // Validation helper functions
-export const validateAge = (age: number | null): boolean => {
-    return age !== null && age >= 1 && age <= 120;
+export const validateUsia = (usia: number | null): boolean => {
+    return usia !== null && usia >= 1 && usia <= 120;
 };
 
-export const validateWeight = (weight: number | null): boolean => {
-    return weight !== null && weight >= 20 && weight <= 500;
+export const validateBeratBadan = (berat_badan: number | null): boolean => {
+    return berat_badan !== null && berat_badan >= 20 && berat_badan <= 500;
 };
 
-export const validateHeight = (height: number | null): boolean => {
-    return height !== null && height >= 50 && height <= 250;
+export const validateTinggiBadan = (tinggi_badan: number | null): boolean => {
+    return tinggi_badan !== null && tinggi_badan >= 50 && tinggi_badan <= 250;
 };
 
-export const validateTime = (time: string): boolean => {
+export const validateWaktu = (waktu: string): boolean => {
     const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    return timeRegex.test(time);
+    return timeRegex.test(waktu);
 };
 
 export const formatTime = (time: string): string => {

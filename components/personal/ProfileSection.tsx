@@ -25,16 +25,16 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
             <View style={personalStyles.card}>
                 <View style={personalStyles.profileRow}>
                     <Text style={personalStyles.profileLabel}>Nama</Text>
-                    <Text style={personalStyles.profileValue}>{profile.name}</Text>
+                    <Text style={personalStyles.profileValue}>{profile.nama}</Text>
                 </View>
                 <View style={personalStyles.profileRow}>
                     <Text style={personalStyles.profileLabel}>Usia</Text>
-                    <Text style={personalStyles.profileValue}>{profile.age} tahun</Text>
+                    <Text style={personalStyles.profileValue}>{profile.usia} tahun</Text>
                 </View>
                 <View style={personalStyles.profileRow}>
                     <Text style={personalStyles.profileLabel}>Jenis Kelamin</Text>
                     <Text style={personalStyles.profileValue}>
-                        {profile.gender === 'male' ? 'Laki-laki' : 'Perempuan'}
+                        {profile.jenis_kelamin === 'male' ? 'Laki-laki' : 'Perempuan'}
                     </Text>
                 </View>
             </View>
@@ -43,11 +43,11 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
             <View style={personalStyles.card}>
                 <View style={personalStyles.profileRow}>
                     <Text style={personalStyles.profileLabel}>Berat Badan (kg)</Text>
-                    <Text style={personalStyles.profileValue}>{profile.weight} kg</Text>
+                    <Text style={personalStyles.profileValue}>{profile.berat_badan} kg</Text>
                 </View>
                 <View style={personalStyles.profileRow}>
                     <Text style={personalStyles.profileLabel}>Tinggi Badan (cm)</Text>
-                    <Text style={personalStyles.profileValue}>{profile.height} cm</Text>
+                    <Text style={personalStyles.profileValue}>{profile.tinggi_badan} cm</Text>
                 </View>
                 <View style={personalStyles.bmiRow}>
                     <Text style={personalStyles.bmiLabel}>Indeks Massa Tubuh (BMI)</Text>
@@ -62,13 +62,13 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 <View style={personalStyles.profileRow}>
                     <Text style={personalStyles.profileLabel}>Tingkat Aktivitas</Text>
                     <Text style={personalStyles.profileValue}>
-                        {activityLevelLabels[profile.activityLevel as keyof typeof activityLevelLabels]}
+                        {activityLevelLabels[profile.tingkat_aktivitas as keyof typeof activityLevelLabels]}
                     </Text>
                 </View>
                 <View style={personalStyles.profileRow}>
                     <Text style={personalStyles.profileLabel}>Catatan Aktivitas</Text>
-                    <Text style={profile.activityNotes ? personalStyles.profileValue : personalStyles.profileValuePlaceholder}>
-                        {profile.activityNotes || 'Tidak ada catatan khusus'}
+                    <Text style={profile.catatan_aktivitas ? personalStyles.profileValue : personalStyles.profileValuePlaceholder}>
+                        {profile.catatan_aktivitas || 'Tidak ada catatan khusus'}
                     </Text>
                 </View>
                 <View style={personalStyles.profileRow}>
@@ -81,20 +81,20 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
             <View style={personalStyles.card}>
                 <View style={personalStyles.profileRow}>
                     <Text style={personalStyles.profileLabel}>Preferensi Makanan</Text>
-                    <Text style={profile.foodPreferences ? personalStyles.profileValue : personalStyles.profileValuePlaceholder}>
-                        {profile.foodPreferences || 'Tidak ada preferensi khusus'}
+                    <Text style={profile.preferensi_makanan ? personalStyles.profileValue : personalStyles.profileValuePlaceholder}>
+                        {profile.preferensi_makanan || 'Tidak ada preferensi khusus'}
                     </Text>
                 </View>
                 <View style={personalStyles.profileRow}>
                     <Text style={personalStyles.profileLabel}>Alergi Makanan</Text>
-                    <Text style={profile.allergies ? personalStyles.profileValue : personalStyles.profileValuePlaceholder}>
-                        {profile.allergies || 'Tidak ada alergi'}
+                    <Text style={profile.alergi_makanan ? personalStyles.profileValue : personalStyles.profileValuePlaceholder}>
+                        {profile.alergi_makanan || 'Tidak ada alergi'}
                     </Text>
                 </View>
                 <View style={personalStyles.profileRow}>
                     <Text style={personalStyles.profileLabel}>Kondisi Kesehatan</Text>
-                    <Text style={profile.healthConditions ? personalStyles.profileValue : personalStyles.profileValuePlaceholder}>
-                        {profile.healthConditions || 'Tidak ada kondisi khusus'}
+                    <Text style={profile.kondisi_kesehatan ? personalStyles.profileValue : personalStyles.profileValuePlaceholder}>
+                        {profile.kondisi_kesehatan || 'Tidak ada kondisi khusus'}
                     </Text>
                 </View>
             </View>
@@ -104,7 +104,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 <View style={personalStyles.profileRow}>
                     <Text style={personalStyles.profileLabel}>Tujuan Utama</Text>
                     <Text style={personalStyles.profileValue}>
-                        {goalLabels[profile.goal as keyof typeof goalLabels]}
+                        {goalLabels[profile.tujuan as keyof typeof goalLabels]}
                     </Text>
                 </View>
             </View>

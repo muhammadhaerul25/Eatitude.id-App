@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { onboardingStyles as styles } from '../styles/tabs/onboardingStyles';
+import { onboardingStyles as styles } from '../../styles/tabs/onboardingStyles';
 
 interface AgeInputProps {
     label: string;

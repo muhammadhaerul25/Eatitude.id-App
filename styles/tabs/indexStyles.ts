@@ -424,6 +424,7 @@ export const indexTabStyles = StyleSheet.create({
         flexDirection: 'row',
         gap: 12,
         marginBottom: 16,
+        paddingHorizontal: 16,
     },
     modalScanButton: {
         flex: 1,
@@ -505,6 +506,86 @@ export const indexTabStyles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 14,
         fontWeight: '600',
+    },
+    // Enhanced UI styles for meal plan integration
+    errorContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FEF2F2',
+        borderColor: '#FECACA',
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: 12,
+        margin: 16,
+    },
+    errorText: {
+        flex: 1,
+        color: '#B91C1C',
+        fontSize: 14,
+    },
+    errorCloseButton: {
+        padding: 4,
+    },
+    errorCloseText: {
+        color: '#B91C1C',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    loadingContainer: {
+        alignItems: 'center',
+        padding: 24,
+        backgroundColor: '#FFFFFF',
+        margin: 16,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    loadingText: {
+        marginTop: 12,
+        fontSize: 16,
+        color: '#6B7280',
+        textAlign: 'center',
+    },
+    refreshButton: {
+        backgroundColor: '#6B7280',
+    },
+    // Meal Plan Info and Empty State styles
+    mealPlanInfo: {
+        backgroundColor: '#F0F9FF',
+        borderColor: '#3B82F6',
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: 12,
+        margin: 16,
+        marginTop: 0,
+    },
+    mealPlanInfoText: {
+        color: '#1E40AF',
+        fontSize: 14,
+        fontWeight: '500',
+        textAlign: 'center',
+    },
+    emptyState: {
+        alignItems: 'center',
+        padding: 32,
+        marginTop: 32,
+    },
+    emptyStateTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#1F2937',
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    emptyStateText: {
+        fontSize: 14,
+        color: '#6B7280',
+        textAlign: 'center',
+        marginBottom: 24,
+        lineHeight: 20,
     },
 });
 

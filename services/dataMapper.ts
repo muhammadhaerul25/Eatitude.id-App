@@ -1,5 +1,5 @@
 import { UserProfile } from '../hooks/onboardingTypes';
-import { UserData } from './api';
+import { PersonalPlan, UserData } from './api';
 
 // Map frontend UserProfile to API UserData
 export function mapUserProfileToApiData(profile: UserProfile): UserData {
@@ -24,87 +24,90 @@ export function mapUserProfileToApiData(profile: UserProfile): UserData {
     };
 
     const mappedData = {
-        nama: profile.name,
-        usia: profile.age || 0,
-        jenis_kelamin: profile.gender === 'male' ? 'Laki-laki' : 'Perempuan',
-        berat_badan: profile.weight || 0,
-        tinggi_badan: profile.height || 0,
-        tingkat_aktivitas: activityLevelMap[profile.activityLevel] || 'sedang',
-        catatan_aktivitas: profile.activityNotes || '',
-        waktu_bangun: profile.wakeTime,
-        waktu_tidur: profile.sleepTime,
-        preferensi_makanan: profile.foodPreferences || '',
-        alergi_makanan: profile.allergies || '',
-        kondisi_kesehatan: profile.healthConditions || '',
-        tujuan: goalMap[profile.goal] || 'meningkatkan_kesehatan'
+        nama: profile.nama,
+        usia: profile.usia || 0,
+        jenis_kelamin: profile.jenis_kelamin === 'male' ? 'Laki-laki' : 'Perempuan',
+        berat_badan: profile.berat_badan || 0,
+        tinggi_badan: profile.tinggi_badan || 0,
+        tingkat_aktivitas: activityLevelMap[profile.tingkat_aktivitas] || 'sedang',
+        catatan_aktivitas: profile.catatan_aktivitas || '',
+        waktu_bangun: profile.waktu_bangun,
+        waktu_tidur: profile.waktu_tidur,
+        preferensi_makanan: profile.preferensi_makanan || '',
+        alergi_makanan: profile.alergi_makanan || '',
+        kondisi_kesehatan: profile.kondisi_kesehatan || '',
+        tujuan: goalMap[profile.tujuan] || 'meningkatkan_kesehatan'
     };
 
     console.log('📊 Mapped data result:', mappedData);
-    console.log(`🔍 Gender mapping: "${profile.gender}" -> "${mappedData.jenis_kelamin}"`);
-    console.log(`🔍 Activity mapping: "${profile.activityLevel}" -> "${mappedData.tingkat_aktivitas}"`);
-    console.log(`🔍 Goal mapping: "${profile.goal}" -> "${mappedData.tujuan}"`);
+    console.log(`🔍 Gender mapping: "${profile.jenis_kelamin}" -> "${mappedData.jenis_kelamin}"`);
+    console.log(`🔍 Activity mapping: "${profile.tingkat_aktivitas}" -> "${mappedData.tingkat_aktivitas}"`);
+    console.log(`🔍 Goal mapping: "${profile.tujuan}" -> "${mappedData.tujuan}"`);
 
     return mappedData;
 }
 
-// Map API PersonalPlan to frontend NutritionPlan
+// Map API PersonalPlan to frontend NutritionPlan (no mapping needed - direct pass-through)
 export function mapPersonalPlanToNutritionPlan(apiPlan: any): any {
-    console.log('🔄 Mapping API plan to nutrition plan...');
-    console.log('📋 API Plan received:', apiPlan);
+    console.log('🔄 No mapping needed - using API plan directly:', apiPlan);
+    // Since frontend now expects the same format as backend, just return as-is
+    return apiPlan;
+}/**
+ * Convert cached nutrition plan back to API PersonalPlan format
+ * This handles the case where we have a simplified nutrition plan structure
+ * and need to convert it back to the API's expected format
+ */
+export function mapNutritionPlanToPersonalPlan(nutritionPlan: any): PersonalPlan {
+    console.log('🔄 Converting cached nutrition plan to API format:', nutritionPlan);
 
-    // Extract values with proper field names for debugging
-    const calories = apiPlan.kebutuhan_kalori?.['total_kalori_per_hari_(kcal)'] || 0;
-    const carbs = apiPlan.kebutuhan_makronutrisi?.['karbohidrat_per_hari_(g)'] || 0;
-    const protein = apiPlan.kebutuhan_makronutrisi?.['protein_per_hari_(g)'] || 0;
-    const fat = apiPlan.kebutuhan_makronutrisi?.['lemak_per_hari_(g)'] || 0;
-    const fiber = apiPlan.kebutuhan_makronutrisi?.['serat_per_hari_(g)'] || 0;
-
-    console.log('🔍 Extracted key values:', { calories, carbs, protein, fat, fiber });
-
-    const result = {
-        status: 'approved',
-        generatedBy: 'Eatitude AI',
-        validatedBy: 'Nutrition Expert',
-        calories: calories,
-        macros: {
-            carbs: carbs,
-            protein: protein,
-            fat: fat,
-            fiber: fiber,
+    const result: PersonalPlan = {
+        kebutuhan_kalori: {
+            'total_kalori_per_hari_(kcal)': nutritionPlan.calories || 2000,
+            per_waktu_makan: {
+                sarapan: Math.round((nutritionPlan.calories || 2000) * 0.25),
+                snack_pagi: Math.round((nutritionPlan.calories || 2000) * 0.075),
+                makan_siang: Math.round((nutritionPlan.calories || 2000) * 0.30),
+                snack_sore: Math.round((nutritionPlan.calories || 2000) * 0.075),
+                makan_malam: Math.round((nutritionPlan.calories || 2000) * 0.30)
+            }
         },
-        vitamins: {
-            vitaminA: apiPlan.kebutuhan_mikronutrisi?.['vitamin_a_per_hari_(mg)'] || 0,
-            vitaminB: apiPlan.kebutuhan_mikronutrisi?.['vitamin_b_kompleks_per_hari_(mg)'] || 0,
-            vitaminC: apiPlan.kebutuhan_mikronutrisi?.['vitamin_c_per_hari_(mg)'] || 0,
-            vitaminD: apiPlan.kebutuhan_mikronutrisi?.['vitamin_d_per_hari_(mg)'] || 0,
-            vitaminE: apiPlan.kebutuhan_mikronutrisi?.['vitamin_e_per_hari_(mg)'] || 0,
-            vitaminK: apiPlan.kebutuhan_mikronutrisi?.['vitamin_k_per_hari_(mg)'] || 0,
+        kebutuhan_makronutrisi: {
+            'karbohidrat_per_hari_(g)': nutritionPlan.macros?.carbs || Math.round((nutritionPlan.calories || 2000) * 0.5 / 4),
+            'protein_per_hari_(g)': nutritionPlan.macros?.protein || Math.round((nutritionPlan.calories || 2000) * 0.2 / 4),
+            'lemak_per_hari_(g)': nutritionPlan.macros?.fat || Math.round((nutritionPlan.calories || 2000) * 0.3 / 9),
+            'serat_per_hari_(g)': nutritionPlan.macros?.fiber || 25
         },
-        minerals: {
-            calcium: apiPlan.kebutuhan_mikronutrisi?.['kalsium_per_hari_(mg)'] || 0,
-            iron: apiPlan.kebutuhan_mikronutrisi?.['zat_besi_per_hari_(mg)'] || 0,
-            magnesium: apiPlan.kebutuhan_mikronutrisi?.['magnesium_per_hari_(mg)'] || 0,
-            potassium: apiPlan.kebutuhan_mikronutrisi?.['kalium_per_hari_(mg)'] || 0,
-            sodium: apiPlan.kebutuhan_mikronutrisi?.['natrium_per_hari_(mg)'] || 0,
-            zinc: apiPlan.kebutuhan_mikronutrisi?.['zinc_per_hari_(mg)'] || 0,
-            iodine: apiPlan.kebutuhan_mikronutrisi?.['yodium_per_hari_(mg)'] || 0,
+        kebutuhan_mikronutrisi: {
+            'vitamin_a_per_hari_(mg)': nutritionPlan.vitamins?.vitaminA || 0.9,
+            'vitamin_b_kompleks_per_hari_(mg)': nutritionPlan.vitamins?.vitaminB || 25,
+            'vitamin_c_per_hari_(mg)': nutritionPlan.vitamins?.vitaminC || 90,
+            'vitamin_d_per_hari_(mg)': nutritionPlan.vitamins?.vitaminD || 0.015,
+            'vitamin_e_per_hari_(mg)': nutritionPlan.vitamins?.vitaminE || 15,
+            'vitamin_k_per_hari_(mg)': nutritionPlan.vitamins?.vitaminK || 0.12,
+            'kalsium_per_hari_(mg)': nutritionPlan.minerals?.calcium || 1000,
+            'zat_besi_per_hari_(mg)': nutritionPlan.minerals?.iron || 8,
+            'magnesium_per_hari_(mg)': nutritionPlan.minerals?.magnesium || 400,
+            'kalium_per_hari_(mg)': nutritionPlan.minerals?.potassium || 3400,
+            'natrium_per_hari_(mg)': nutritionPlan.minerals?.sodium || 1500,
+            'zinc_per_hari_(mg)': nutritionPlan.minerals?.zinc || 11,
+            'yodium_per_hari_(mg)': nutritionPlan.minerals?.iodine || 0.15
         },
-        limits: {
-            sugar: apiPlan.batasi_konsumsi?.['gula_per_hari_(g)'] ? `max ${apiPlan.batasi_konsumsi['gula_per_hari_(g)']}g/hari` : 'max 50g/hari',
-            salt: apiPlan.batasi_konsumsi?.['garam_per_hari_(g)'] ? `max ${apiPlan.batasi_konsumsi['garam_per_hari_(g)']}g/hari` : 'max 5g/hari',
-            caffeine: apiPlan.batasi_konsumsi?.['kafein_per_hari_(mg)'] ? `max ${apiPlan.batasi_konsumsi['kafein_per_hari_(mg)']}mg/hari` : 'max 400mg/hari',
-            saturatedFat: apiPlan.batasi_konsumsi?.['lemak_jenuh_per_hari_(g)'] ? `max ${apiPlan.batasi_konsumsi['lemak_jenuh_per_hari_(g)']}g/hari` : 'max 25g/hari',
-            transFat: apiPlan.batasi_konsumsi?.['lemak_trans_per_hari_(g)'] ? (apiPlan.batasi_konsumsi['lemak_trans_per_hari_(g)'] === 0 ? 'hindari' : `max ${apiPlan.batasi_konsumsi['lemak_trans_per_hari_(g)']}g/hari`) : 'hindari',
-            cholesterol: apiPlan.batasi_konsumsi?.['kolesterol_per_hari_(mg)'] ? `max ${apiPlan.batasi_konsumsi['kolesterol_per_hari_(mg)']}mg/hari` : 'max 300mg/hari',
+        batasi_konsumsi: {
+            'gula_per_hari_(g)': 25,
+            'garam_per_hari_(g)': 5,
+            'kafein_per_hari_(mg)': 400,
+            'lemak_jenuh_per_hari_(g)': 20,
+            'lemak_trans_per_hari_(g)': 0,
+            'kolesterol_per_hari_(mg)': 300
         },
-        hydration: {
-            liters: apiPlan.kebutuhan_cairan?.['air_per_hari_(liter)'] || 2.5,
-            glasses: apiPlan.kebutuhan_cairan?.['air_per_hari_(gelas)'] || 8,
+        kebutuhan_cairan: {
+            'air_per_hari_(liter)': nutritionPlan.hydration?.liters || 2.5,
+            'total_cairan_per_hari_(liter)': nutritionPlan.hydration?.liters || 2.5
         },
-        notes: apiPlan.catatan || '',
+        catatan: nutritionPlan.notes || 'Personalized nutrition plan generated by Eatitude AI'
     };
 
-    console.log('✅ Final mapped result:', result);
+    console.log('✅ Converted nutrition plan to API format:', result);
     return result;
 }
 

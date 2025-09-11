@@ -22,7 +22,7 @@ import {
     PersonalPlanAPIError,
     type PersonalPlan,
     type UserData,
-} from '../services/personalPlanAPI';
+} from '../../services/personalPlanAPI';
 
 interface PersonalPlanGeneratorProps {
     userData: UserData;

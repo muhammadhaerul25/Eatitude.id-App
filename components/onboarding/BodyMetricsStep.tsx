@@ -1,9 +1,9 @@
 import { Scale } from 'lucide-react-native';
 import React from 'react';
 import { Text, View } from 'react-native';
-import { NumberInput } from '../../components/NumberInput';
 import { UserProfile } from '../../hooks/onboardingTypes';
 import { onboardingStyles as styles } from '../../styles/tabs/onboardingStyles';
+import { NumberInput } from '../inputs/NumberInput';
 
 interface BodyMetricsStepProps {
     profile: UserProfile;
@@ -12,9 +12,9 @@ interface BodyMetricsStepProps {
 
 export const BodyMetricsStep: React.FC<BodyMetricsStepProps> = ({ profile, updateProfile }) => {
     const calculateBMI = (): number | null => {
-        if (profile.weight && profile.height) {
-            const weight = profile.weight;
-            const height = profile.height / 100; // convert cm to m
+        if (profile.berat_badan && profile.tinggi_badan) {
+            const weight = profile.berat_badan;
+            const height = profile.tinggi_badan / 100; // convert cm to m
             return weight / (height * height);
         }
         return null;
@@ -45,8 +45,8 @@ export const BodyMetricsStep: React.FC<BodyMetricsStepProps> = ({ profile, updat
                 <View style={styles.halfWidth}>
                     <NumberInput
                         label="Weight"
-                        value={profile.weight}
-                        onChangeValue={(weight) => updateProfile({ weight })}
+                        value={profile.berat_badan}
+                        onChangeValue={(berat_badan) => updateProfile({ berat_badan })}
                         placeholder="70"
                         min={20}
                         max={500}
@@ -58,8 +58,8 @@ export const BodyMetricsStep: React.FC<BodyMetricsStepProps> = ({ profile, updat
                 <View style={styles.halfWidth}>
                     <NumberInput
                         label="Height"
-                        value={profile.height}
-                        onChangeValue={(height) => updateProfile({ height })}
+                        value={profile.tinggi_badan}
+                        onChangeValue={(tinggi_badan) => updateProfile({ tinggi_badan })}
                         placeholder="175"
                         min={50}
                         max={250}

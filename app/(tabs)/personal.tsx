@@ -8,11 +8,11 @@ import {
   View
 } from 'react-native';
 
+import NutritionSections from '../../components/personal/NutritionSections';
+import ProfileSection from '../../components/personal/ProfileSection';
+import StatusSection from '../../components/personal/StatusSection';
 import { usePersonalLogic } from '../../hooks/usePersonalLogic';
 import { personalStyles } from '../../styles/tabs/personalStyles';
-import NutritionSections from '../personal/NutritionSections';
-import ProfileSection from '../personal/ProfileSection';
-import StatusSection from '../personal/StatusSection';
 
 export default function PersonalScreen() {
   const {

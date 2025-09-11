@@ -1,8 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { apiService } from '../services/api';
 import { mapPersonalPlanToNutritionPlan, mapUserProfileToApiData } from '../services/dataMapper';
+import { unifiedCache } from '../services/unifiedCacheService';
 import { UserProfile } from './onboardingTypes';
 import { NutritionPlan } from './types';
 
@@ -11,13 +12,32 @@ export const usePersonalLogic = () => {
     const [nutritionPlan, setNutritionPlan] = useState<NutritionPlan | null>(null);
     const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
 
-    useEffect(() => {
-        loadProfile();
-        loadNutritionPlan();
-    }, []);
-
-    const loadProfile = async () => {
+    const loadProfile = useCallback(async () => {
         try {
+            // First try to load from unified cache
+            const cache = await unifiedCache.getCache();
+            if (cache.user_data) {
+                // Map UserData to UserProfile format
+                const userProfile: UserProfile = {
+                    nama: cache.user_data.nama,
+                    usia: cache.user_data.usia,
+                    jenis_kelamin: cache.user_data.jenis_kelamin as 'male' | 'female' | '',
+                    berat_badan: cache.user_data.berat_badan,
+                    tinggi_badan: cache.user_data.tinggi_badan,
+                    tingkat_aktivitas: cache.user_data.tingkat_aktivitas as 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' | '',
+                    catatan_aktivitas: cache.user_data.catatan_aktivitas || '',
+                    waktu_bangun: cache.user_data.waktu_bangun,
+                    waktu_tidur: cache.user_data.waktu_tidur,
+                    preferensi_makanan: cache.user_data.preferensi_makanan || '',
+                    alergi_makanan: cache.user_data.alergi_makanan || '',
+                    kondisi_kesehatan: cache.user_data.kondisi_kesehatan || '',
+                    tujuan: cache.user_data.tujuan as 'improve_health' | 'maintain_weight' | 'lose_weight' | 'gain_weight' | 'manage_disease' | '',
+                };
+                setProfile(userProfile);
+                return;
+            }
+
+            // Fallback to old AsyncStorage method
             const profileData = await AsyncStorage.getItem('userProfile');
             if (profileData) {
                 setProfile(JSON.parse(profileData));
@@ -25,10 +45,63 @@ export const usePersonalLogic = () => {
         } catch (error) {
             console.error('Error loading profile:', error);
         }
-    };
+    }, []);
 
-    const loadNutritionPlan = async () => {
+    const generateSamplePlan = useCallback(() => {
+        const samplePlan: NutritionPlan = {
+            kebutuhan_kalori: {
+                "total_kalori_per_hari_(kcal)": 2000
+            },
+            kebutuhan_makronutrisi: {
+                "karbohidrat_per_hari_(g)": 250,
+                "protein_per_hari_(g)": 150,
+                "lemak_per_hari_(g)": 70,
+                "serat_per_hari_(g)": 25
+            },
+            kebutuhan_mikronutrisi: {
+                "vitamin_a_per_hari_(mg)": 0.9,
+                "vitamin_b_kompleks_per_hari_(mg)": 2.4,
+                "vitamin_c_per_hari_(mg)": 90,
+                "vitamin_d_per_hari_(mg)": 0.02,
+                "vitamin_e_per_hari_(mg)": 15,
+                "vitamin_k_per_hari_(mg)": 0.12,
+                "kalsium_per_hari_(mg)": 1000,
+                "zat_besi_per_hari_(mg)": 18,
+                "magnesium_per_hari_(mg)": 400,
+                "kalium_per_hari_(mg)": 3500,
+                "natrium_per_hari_(mg)": 2300,
+                "zinc_per_hari_(mg)": 11,
+                "yodium_per_hari_(mg)": 0.15
+            },
+            batasi_konsumsi: {
+                "gula_per_hari_(g)": 50,
+                "garam_per_hari_(g)": 5,
+                "kafein_per_hari_(mg)": 400,
+                "lemak_jenuh_per_hari_(g)": 22,
+                "lemak_trans_per_hari_(g)": 2,
+                "kolesterol_per_hari_(mg)": 300
+            },
+            kebutuhan_cairan: {
+                "air_per_hari_(liter)": 2.5,
+                "air_per_hari_(gelas)": 10
+            },
+            catatan: 'Rencana ini dibuat berdasarkan profil dan tujuan Anda. Silakan tunggu validasi dari ahli gizi.'
+        };
+        setNutritionPlan(samplePlan);
+        AsyncStorage.setItem('nutritionPlan', JSON.stringify(samplePlan));
+    }, []);
+
+    const loadNutritionPlan = useCallback(async () => {
         try {
+            // First try to load from unified cache
+            const cache = await unifiedCache.getCache();
+            if (cache.personal_plan) {
+                const mappedPlan = mapPersonalPlanToNutritionPlan(cache.personal_plan);
+                setNutritionPlan(mappedPlan);
+                return;
+            }
+
+            // Fallback to old AsyncStorage method
             const planData = await AsyncStorage.getItem('nutritionPlan');
             if (planData) {
                 setNutritionPlan(JSON.parse(planData));
@@ -47,54 +120,12 @@ export const usePersonalLogic = () => {
             console.error('Error loading nutrition plan:', error);
             generateSamplePlan();
         }
-    };
+    }, [generateSamplePlan]);
 
-    const generateSamplePlan = () => {
-        const samplePlan: NutritionPlan = {
-            status: 'waiting',
-            generatedBy: 'NutriAdvisor AI',
-            validatedBy: '',
-            calories: 2000,
-            macros: {
-                carbs: 250,
-                protein: 150,
-                fat: 67,
-                fiber: 25
-            },
-            vitamins: {
-                vitaminA: 900,
-                vitaminB: 2.4,
-                vitaminC: 90,
-                vitaminD: 20,
-                vitaminE: 15,
-                vitaminK: 120
-            },
-            minerals: {
-                calcium: 1000,
-                iron: 18,
-                magnesium: 400,
-                potassium: 3500,
-                sodium: 2300,
-                zinc: 11,
-                iodine: 150
-            },
-            limits: {
-                sugar: 'Maksimal 4 sendok makan per hari',
-                salt: 'Maksimal 1 sendok teh per hari',
-                caffeine: 'Maksimal 2 cangkir kopi per hari',
-                saturatedFat: 'Maksimal 10% dari total energi harian (≈ 22g untuk kebutuhan 2000 kkal)',
-                transFat: 'Maksimal <1% dari total energi harian (≈ 2g untuk kebutuhan 2000 kkal)',
-                cholesterol: 'Maksimal 300mg per hari'
-            },
-            hydration: {
-                liters: 2.5,
-                glasses: 10
-            },
-            notes: 'Rencana ini dibuat berdasarkan profil dan tujuan Anda. Silakan tunggu validasi dari ahli gizi.'
-        };
-        setNutritionPlan(samplePlan);
-        AsyncStorage.setItem('nutritionPlan', JSON.stringify(samplePlan));
-    };
+    useEffect(() => {
+        loadProfile();
+        loadNutritionPlan();
+    }, [loadProfile, loadNutritionPlan]);
 
     const generateNutritionPlan = async () => {
         if (!profile) {
@@ -103,8 +134,8 @@ export const usePersonalLogic = () => {
         }
 
         // Check if profile is complete
-        if (!profile.name || !profile.age || !profile.weight || !profile.height ||
-            !profile.gender || !profile.activityLevel || !profile.goal) {
+        if (!profile.nama || !profile.usia || !profile.berat_badan || !profile.tinggi_badan ||
+            !profile.jenis_kelamin || !profile.tingkat_aktivitas || !profile.tujuan) {
             Alert.alert('Profil Tidak Lengkap', 'Silakan lengkapi semua data profil untuk menghasilkan rencana nutrisi.');
             return;
         }
@@ -148,9 +179,9 @@ export const usePersonalLogic = () => {
     };
 
     const getBMI = () => {
-        if (profile?.weight && profile?.height) {
-            const weight = profile.weight;
-            const height = profile.height / 100;
+        if (profile?.berat_badan && profile?.tinggi_badan) {
+            const weight = profile.berat_badan;
+            const height = profile.tinggi_badan / 100;
             return (weight / (height * height)).toFixed(1);
         }
         return '0.0';
@@ -164,9 +195,9 @@ export const usePersonalLogic = () => {
     };
 
     const getSleepDuration = () => {
-        if (profile?.wakeTime && profile?.sleepTime) {
-            const [wakeHour, wakeMin] = profile.wakeTime.split(':').map(Number);
-            const [sleepHour, sleepMin] = profile.sleepTime.split(':').map(Number);
+        if (profile?.waktu_bangun && profile?.waktu_tidur) {
+            const [wakeHour, wakeMin] = profile.waktu_bangun.split(':').map(Number);
+            const [sleepHour, sleepMin] = profile.waktu_tidur.split(':').map(Number);
 
             let wakeTotalMin = wakeHour * 60 + wakeMin;
             let sleepTotalMin = sleepHour * 60 + sleepMin;
@@ -205,7 +236,7 @@ export const usePersonalLogic = () => {
                         try {
                             await AsyncStorage.clear();
                             Alert.alert('Berhasil', 'Data aplikasi telah dihapus. Silakan restart aplikasi.');
-                        } catch (error) {
+                        } catch {
                             Alert.alert('Error', 'Gagal mereset data aplikasi.');
                         }
                     }

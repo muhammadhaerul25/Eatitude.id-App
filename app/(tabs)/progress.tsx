@@ -5,7 +5,7 @@ import {
   Droplet,
   Target
 } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -13,13 +13,127 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { unifiedCache } from '../../services/unifiedCacheService';
 import { progressTabStyles } from '../../styles/tabs/progressStyles';
 
 export default function ProgressScreen() {
   const [selectedPeriod, setSelectedPeriod] = useState<'day' | 'week' | 'month'>('day');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [dailyTargets, setDailyTargets] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Sample data - in a real app this would come from the nutrition plan and daily tracking
-  const dailyTargets = {
+  // Date picker functionality for viewing different days
+  const changeDate = (days: number) => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() + days);
+    setSelectedDate(newDate);
+  };
+
+  // Load real progress data from cache
+  const loadProgressData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const cache = await unifiedCache.getCache();
+      const dayCache = await unifiedCache.getDayCache(selectedDate);
+
+      if (!cache.personal_plan) {
+        console.warn('No personal plan found - using sample data');
+        setDailyTargets(getSampleData());
+        return;
+      }
+
+      // Extract targets from personal plan
+      const personalPlan = cache.personal_plan;
+      const progress = dayCache.progress;
+
+      const targets = {
+        calories: {
+          current: progress.calories_eaten,
+          target: personalPlan.kebutuhan_kalori?.["total_kalori_per_hari_(kcal)"] || 2000
+        },
+        macros: {
+          carbs: {
+            current: progress.macros_eaten.carbs,
+            target: personalPlan.kebutuhan_makronutrisi?.["karbohidrat_per_hari_(g)"] || 250
+          },
+          protein: {
+            current: progress.macros_eaten.protein,
+            target: personalPlan.kebutuhan_makronutrisi?.["protein_per_hari_(g)"] || 150
+          },
+          fat: {
+            current: progress.macros_eaten.fat,
+            target: personalPlan.kebutuhan_makronutrisi?.["lemak_per_hari_(g)"] || 67
+          },
+          fiber: {
+            current: progress.macros_eaten.fiber,
+            target: personalPlan.kebutuhan_makronutrisi?.["serat_per_hari_(g)"] || 25
+          },
+        },
+        vitamins: {
+          vitaminA: { current: 720, target: 900 }, // Will be calculated from scanned foods
+          vitaminB: { current: 2.1, target: 2.4 },
+          vitaminC: { current: 108, target: 90 },
+          vitaminD: { current: 15, target: 20 },
+          vitaminE: { current: 12, target: 15 },
+          vitaminK: { current: 145, target: 120 },
+        },
+        minerals: {
+          calcium: { current: 1100, target: 1000 },
+          iron: { current: 16, target: 18 },
+          magnesium: { current: 280, target: 400 },
+          potassium: { current: 2100, target: 3500 },
+          sodium: { current: 2000, target: 2300 },
+          zinc: { current: 13, target: 11 },
+          iodine: { current: 135, target: 150 },
+        },
+        limits: {
+          sugar: {
+            current: calculateSugarFromScannedFoods(dayCache.scanned_foods),
+            target: personalPlan.batasi_konsumsi?.["gula_per_hari_(g)"] || 50
+          },
+          salt: {
+            current: calculateSaltFromScannedFoods(dayCache.scanned_foods),
+            target: personalPlan.batasi_konsumsi?.["garam_per_hari_(g)"] || 5
+          },
+          saturatedFat: { current: 25, target: 20 },
+          transFat: { current: 3, target: 2 },
+          caffeine: {
+            current: 320,
+            target: personalPlan.batasi_konsumsi?.["kafein_per_hari_(mg)"] || 400
+          },
+          cholesterol: {
+            current: 180,
+            target: personalPlan.batasi_konsumsi?.["kolesterol_per_hari_(mg)"] || 300
+          },
+        },
+        hydration: {
+          current: Math.floor(progress.water_intake_ml / 250), // Convert ml to glasses 
+          target: personalPlan.kebutuhan_cairan?.["air_per_hari_(gelas)"] || 10
+        }
+      };
+
+      setDailyTargets(targets);
+
+    } catch (error) {
+      console.error('Error loading progress data:', error);
+      setDailyTargets(getSampleData());
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedDate]);
+
+  // Calculate sugar from scanned foods
+  const calculateSugarFromScannedFoods = (scannedFoods: any[]) => {
+    return scannedFoods.reduce((total, food) => total + (food.nutrition?.sugar || 0), 0);
+  };
+
+  // Calculate salt from scanned foods  
+  const calculateSaltFromScannedFoods = (scannedFoods: any[]) => {
+    return scannedFoods.reduce((total, food) => total + ((food.nutrition?.sodium || 0) / 1000), 0); // Convert mg to g
+  };
+
+  // Fallback sample data
+  const getSampleData = () => ({
     calories: { current: 1650, target: 2000 },
     macros: {
       carbs: { current: 180, target: 250 },
@@ -45,15 +159,29 @@ export default function ProgressScreen() {
       iodine: { current: 135, target: 150 },
     },
     limits: {
-      sugar: { current: 35, target: 50 }, // grams
-      salt: { current: 2.8, target: 5 }, // grams
-      saturatedFat: { current: 25, target: 20 }, // grams
-      transFat: { current: 3, target: 2 }, // grams
-      caffeine: { current: 320, target: 400 }, // mg
-      cholesterol: { current: 180, target: 300 }, // mg
+      sugar: { current: 35, target: 50 },
+      salt: { current: 2.8, target: 5 },
+      saturatedFat: { current: 25, target: 20 },
+      transFat: { current: 3, target: 2 },
+      caffeine: { current: 320, target: 400 },
+      cholesterol: { current: 180, target: 300 },
     },
-    hydration: { current: 6, target: 10 } // glasses
-  };
+    hydration: { current: 6, target: 10 }
+  });
+
+  // Load data on mount and when date changes
+  useEffect(() => {
+    loadProgressData();
+  }, [loadProgressData]);
+
+  // If still loading or no data, show loading or sample data
+  if (isLoading || !dailyTargets) {
+    return (
+      <SafeAreaView style={progressTabStyles.container}>
+        <Text style={progressTabStyles.headerTitle}>Loading Progress...</Text>
+      </SafeAreaView>
+    );
+  }
 
   const getProgressPercentage = (current: number, target: number) => {
     return (current / target) * 100;
@@ -91,17 +219,24 @@ export default function ProgressScreen() {
     );
   };
 
-  const StatusIndicator = ({ status, color }: { status: string, color: string }) => (
-    <View style={[progressTabStyles.statusIndicator, { backgroundColor: color }]}>
-      <Text style={progressTabStyles.statusText}>{status}</Text>
-    </View>
-  );
-
   return (
     <SafeAreaView style={progressTabStyles.container}>
       {/* Header */}
       <View style={progressTabStyles.header}>
-        <Text style={progressTabStyles.headerTitle}>Progress Tracking</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <Text style={progressTabStyles.headerTitle}>Progress Tracking</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => changeDate(-1)} style={{ padding: 5 }}>
+              <Text style={{ fontSize: 18, color: '#10B981' }}>‹</Text>
+            </TouchableOpacity>
+            <Text style={{ fontSize: 14, color: '#6B7280', marginHorizontal: 10 }}>
+              {selectedDate.toLocaleDateString()}
+            </Text>
+            <TouchableOpacity onPress={() => changeDate(1)} style={{ padding: 5 }}>
+              <Text style={{ fontSize: 18, color: '#10B981' }}>›</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
         <View style={progressTabStyles.periodSelector}>
           {['day', 'week', 'month'].map((period) => (
             <TouchableOpacity
@@ -210,7 +345,7 @@ export default function ProgressScreen() {
           <View style={progressTabStyles.card}>
             {/* Vitamins */}
             <Text style={progressTabStyles.subSectionTitle}>Vitamin</Text>
-            {Object.entries(dailyTargets.vitamins).map(([vitamin, data]) => {
+            {Object.entries(dailyTargets.vitamins).map(([vitamin, data]: [string, any]) => {
               const status = getMicronutrientStatus(data.current, data.target);
               const IconComponent = status.icon;
               const vitaminLabels = {
@@ -240,7 +375,7 @@ export default function ProgressScreen() {
 
             {/* Minerals */}
             <Text style={[progressTabStyles.subSectionTitle, { marginTop: 16 }]}>Mineral</Text>
-            {Object.entries(dailyTargets.minerals).map(([mineral, data]) => {
+            {Object.entries(dailyTargets.minerals).map(([mineral, data]: [string, any]) => {
               const status = getMicronutrientStatus(data.current, data.target);
               const IconComponent = status.icon;
               const mineralLabels = {
@@ -290,7 +425,7 @@ export default function ProgressScreen() {
           <Text style={progressTabStyles.sectionTitle}>Batas Konsumsi</Text>
           <View style={progressTabStyles.card}>
             <Text style={progressTabStyles.subSectionTitle}>Batas Konsumsi</Text>
-            {Object.entries(dailyTargets.limits).map(([limit, data]) => {
+            {Object.entries(dailyTargets.limits).map(([limit, data]: [string, any]) => {
               const status = getLimitStatus(data.current, data.target);
               const limitLabels = {
                 sugar: 'Gula',

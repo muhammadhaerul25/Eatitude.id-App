@@ -1,9 +1,9 @@
 import { Activity } from 'lucide-react-native';
 import React from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { TimeInput } from '../../components/TimeInput';
 import { UserProfile, activityLevels } from '../../hooks/onboardingTypes';
 import { onboardingStyles as styles } from '../../styles/tabs/onboardingStyles';
+import { TimeInput } from '../inputs/TimeInput';
 
 interface ActivityRestStepProps {
     profile: UserProfile;
@@ -27,17 +27,17 @@ export const ActivityRestStep: React.FC<ActivityRestStepProps> = ({ profile, upd
                             key={activity.key}
                             style={[
                                 styles.activityButton,
-                                profile.activityLevel === activity.key && styles.activityButtonActive
+                                profile.tingkat_aktivitas === activity.key && styles.activityButtonActive
                             ]}
-                            onPress={() => updateProfile({ activityLevel: activity.key as any })}
+                            onPress={() => updateProfile({ tingkat_aktivitas: activity.key as any })}
                         >
                             <Text style={[
                                 styles.activityButtonTitle,
-                                profile.activityLevel === activity.key && styles.activityButtonTitleActive
+                                profile.tingkat_aktivitas === activity.key && styles.activityButtonTitleActive
                             ]}>{activity.label}</Text>
                             <Text style={[
                                 styles.activityButtonDesc,
-                                profile.activityLevel === activity.key && styles.activityButtonDescActive
+                                profile.tingkat_aktivitas === activity.key && styles.activityButtonDescActive
                             ]}>{activity.description}</Text>
                         </TouchableOpacity>
                     ))}
@@ -48,8 +48,8 @@ export const ActivityRestStep: React.FC<ActivityRestStepProps> = ({ profile, upd
                 <Text style={styles.inputLabel}>Activity Notes (Optional)</Text>
                 <TextInput
                     style={[styles.textInput, styles.textArea]}
-                    value={profile.activityNotes}
-                    onChangeText={(text) => updateProfile({ activityNotes: text })}
+                    value={profile.catatan_aktivitas}
+                    onChangeText={(text) => updateProfile({ catatan_aktivitas: text })}
                     placeholder="Describe your typical activities or exercise routine..."
                     multiline
                     numberOfLines={3}
@@ -60,8 +60,8 @@ export const ActivityRestStep: React.FC<ActivityRestStepProps> = ({ profile, upd
                 <View style={styles.halfWidth}>
                     <TimeInput
                         label="Wake Time"
-                        value={profile.wakeTime}
-                        onChangeValue={(wakeTime) => updateProfile({ wakeTime })}
+                        value={profile.waktu_bangun}
+                        onChangeValue={(waktu_bangun) => updateProfile({ waktu_bangun })}
                         placeholder="06:00"
                         required
                     />
@@ -70,8 +70,8 @@ export const ActivityRestStep: React.FC<ActivityRestStepProps> = ({ profile, upd
                 <View style={styles.halfWidth}>
                     <TimeInput
                         label="Sleep Time"
-                        value={profile.sleepTime}
-                        onChangeValue={(sleepTime) => updateProfile({ sleepTime })}
+                        value={profile.waktu_tidur}
+                        onChangeValue={(waktu_tidur) => updateProfile({ waktu_tidur })}
                         placeholder="22:00"
                         required
                     />

@@ -17,8 +17,8 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { useNutritionAdvisor, useNutritionAdvisorErrorMessages } from '../hooks/useNutritionAdvisor';
-import { MealPlan, PersonalPlan, UserData, UserProgress } from '../services/nutritionAdvisorAPI';
+import { useNutritionAdvisor, useNutritionAdvisorErrorMessages } from '../../hooks/useNutritionAdvisor';
+import { MealPlan, PersonalPlan, UserData, UserProgress } from '../../services/nutritionAdvisorAPI';
 
 interface Message {
     id: string;

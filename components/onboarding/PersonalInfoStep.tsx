@@ -1,9 +1,9 @@
 import { User } from 'lucide-react-native';
 import React from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { AgeInput } from '../../components/AgeInput';
 import { UserProfile } from '../../hooks/onboardingTypes';
 import { onboardingStyles as styles } from '../../styles/tabs/onboardingStyles';
+import { AgeInput } from '../inputs/AgeInput';
 
 interface PersonalInfoStepProps {
     profile: UserProfile;
@@ -23,16 +23,16 @@ export const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({ profile, upd
                 </Text>
                 <TextInput
                     style={styles.textInput}
-                    value={profile.name}
-                    onChangeText={(text) => updateProfile({ name: text })}
+                    value={profile.nama}
+                    onChangeText={(text) => updateProfile({ nama: text })}
                     placeholder="Enter your name"
                 />
             </View>
 
             <AgeInput
                 label="Age"
-                value={profile.age}
-                onChangeValue={(age: number | null) => updateProfile({ age })}
+                value={profile.usia}
+                onChangeValue={(usia: number | null) => updateProfile({ usia })}
                 required
             />
 
@@ -45,26 +45,26 @@ export const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({ profile, upd
                     <TouchableOpacity
                         style={[
                             styles.genderButton,
-                            profile.gender === 'male' && styles.genderButtonActive
+                            profile.jenis_kelamin === 'male' && styles.genderButtonActive
                         ]}
-                        onPress={() => updateProfile({ gender: 'male' })}
+                        onPress={() => updateProfile({ jenis_kelamin: 'male' })}
                     >
                         <Text style={[
                             styles.genderButtonText,
-                            profile.gender === 'male' && styles.genderButtonTextActive
+                            profile.jenis_kelamin === 'male' && styles.genderButtonTextActive
                         ]}>Male</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         style={[
                             styles.genderButton,
-                            profile.gender === 'female' && styles.genderButtonActive
+                            profile.jenis_kelamin === 'female' && styles.genderButtonActive
                         ]}
-                        onPress={() => updateProfile({ gender: 'female' })}
+                        onPress={() => updateProfile({ jenis_kelamin: 'female' })}
                     >
                         <Text style={[
                             styles.genderButtonText,
-                            profile.gender === 'female' && styles.genderButtonTextActive
+                            profile.jenis_kelamin === 'female' && styles.genderButtonTextActive
                         ]}>Female</Text>
                     </TouchableOpacity>
                 </View>

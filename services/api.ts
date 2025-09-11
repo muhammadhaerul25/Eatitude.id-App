@@ -27,6 +27,16 @@ export interface PersonalPlan {
     batasi_konsumsi: any;
     kebutuhan_cairan: any;
     catatan: string;
+    // Legacy/alternate property names for backwards compatibility
+    hidrasi?: {
+        liter?: number;
+        gelas?: number;
+    };
+    kalori?: number;
+    // Status and metadata properties for UI components
+    status?: 'waiting' | 'approved' | 'adjusted' | string;
+    dibuatOleh?: string;
+    divalidasiOleh?: string;
 }
 
 export interface MealPlan {
@@ -51,6 +61,22 @@ export interface NutritionEstimation {
     };
     vitamin_mineral: any;
     catatan: string;
+}
+
+export interface NutritionLabelResponse {
+    nama_produk: string;
+    berat_per_sajian: number;
+    informasi_gizi: {
+        energi_total: number;
+        lemak_total: number;
+        lemak_jenuh: number;
+        protein: number;
+        karbohidrat_total: number;
+        gula: number;
+        serat_pangan: number;
+        natrium: number;
+    };
+    catatan?: string;
 }
 
 // Nutrition Advisor Interfaces
@@ -158,6 +184,7 @@ class ApiService {
                     console.log(`📋 Parsed request body:`, JSON.stringify(parsedBody, null, 2));
                 } catch (e) {
                     console.log(`📋 Request body (non-JSON):`, config.body);
+                    console.log(`📋 JSON parse error:`, e);
                 }
             }
 
@@ -274,13 +301,14 @@ class ApiService {
         userData: any,
         personalPlan: any
     ): Promise<MealPlan> {
+        console.log('🍽️ Generating meal plan with extended timeout (300 seconds)');
         return this.request('/generate_meal_plan', {
             method: 'POST',
             body: JSON.stringify({
                 user_data: userData,
                 personal_plan: personalPlan,
             }),
-        });
+        }, 300000); // 300 seconds timeout for AI processing
     }
 
     // Scan food image for nutrition estimation
@@ -296,7 +324,7 @@ class ApiService {
     }
 
     // Scan nutrition label image
-    async scanNutritionLabel(imageFile: File): Promise<any> {
+    async scanNutritionLabel(imageFile: File): Promise<NutritionLabelResponse> {
         const formData = new FormData();
         formData.append('file', imageFile);
 
@@ -305,6 +333,43 @@ class ApiService {
             headers: {}, // Let browser set Content-Type for FormData
             body: formData,
         });
+    }
+
+    // Helper method to convert React Native image URI to File for API calls
+    async uriToFile(uri: string, fileName: string = 'image.jpg'): Promise<File> {
+        try {
+            console.log(`📷 Converting image URI to File: ${uri}`);
+
+            // Fetch the image data from the URI
+            const response = await fetch(uri);
+            const blob = await response.blob();
+
+            // Create a File object from the blob
+            const file = new File([blob], fileName, {
+                type: blob.type || 'image/jpeg'
+            });
+
+            console.log(`✅ Image converted - Size: ${file.size} bytes, Type: ${file.type}`);
+            return file;
+
+        } catch (error) {
+            console.error('❌ Failed to convert URI to File:', error);
+            throw new Error(`Failed to process image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
+
+    // Convenience method for scanning food from React Native image URI
+    async scanFoodFromUri(imageUri: string): Promise<NutritionEstimation> {
+        console.log(`🍎 Scanning food from URI: ${imageUri}`);
+        const file = await this.uriToFile(imageUri, 'food_image.jpg');
+        return this.scanFoodImage(file);
+    }
+
+    // Convenience method for scanning nutrition label from React Native image URI  
+    async scanNutritionLabelFromUri(imageUri: string): Promise<NutritionLabelResponse> {
+        console.log(`🏷️ Scanning nutrition label from URI: ${imageUri}`);
+        const file = await this.uriToFile(imageUri, 'nutrition_label.jpg');
+        return this.scanNutritionLabel(file);
     }
 
     // Generate nutrition advice with enhanced type safety and error handling

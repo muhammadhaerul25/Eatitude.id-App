@@ -1,11 +1,3 @@
-Section 3: Aktivitas dan Istirahat
-Tingkat Aktivitas
-Sedentari = Tidak atau jarang berolahraga
-Ringan = Olahraga 1-3 kali/minggu
-Sedang = Olahraga 3-5 kali/minggu
-Aktif = Olahraga 6-7 kali/minggu
-Sangat Aktif = Olahraga berta & pekerjaan fisik
-Catatan Aktivitas (Opsional)
 
 setelah diacc oleh nutritionist diarahkan ke halaman progress
 

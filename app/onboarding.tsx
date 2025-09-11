@@ -9,14 +9,14 @@ import {
   View,
 } from 'react-native';
 
+import { LoadingOverlay } from '../components/common/LoadingOverlay';
+import { ActivityRestStep } from '../components/onboarding/ActivityRestStep';
+import { BodyMetricsStep } from '../components/onboarding/BodyMetricsStep';
+import { GoalsObjectivesStep } from '../components/onboarding/GoalsObjectivesStep';
+import { PersonalInfoStep } from '../components/onboarding/PersonalInfoStep';
 import { steps } from '../hooks/onboardingTypes';
 import { useOnboardingLogic } from '../hooks/useOnboardingLogic';
 import { onboardingStyles } from '../styles/tabs/onboardingStyles';
-import { LoadingOverlay } from './components/LoadingOverlay';
-import ActivityRestStep from './onboarding/ActivityRestStep';
-import BodyMetricsStep from './onboarding/BodyMetricsStep';
-import GoalsObjectivesStep from './onboarding/GoalsObjectivesStep';
-import PersonalInfoStep from './onboarding/PersonalInfoStep';
 
 export default function OnboardingScreen() {
   const {
@@ -61,7 +61,7 @@ export default function OnboardingScreen() {
           style={onboardingStyles.appLogo}
           resizeMode="contain"
         />
-        <Text style={onboardingStyles.welcomeText}>Let's personalize your experience</Text>
+        <Text style={onboardingStyles.welcomeText}>Let&apos;s personalize your experience</Text>
 
         {/* Progress Indicator */}
         <View style={onboardingStyles.progressContainer}>
