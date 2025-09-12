@@ -97,6 +97,9 @@ export async function generateNutritionAdvice(
         console.log(`👤 User: ${userData.nama}`);
 
         // Make the API call with proper headers and timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 600000); // 10 minutes timeout
+
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
@@ -105,8 +108,10 @@ export async function generateNutritionAdvice(
             },
             body: JSON.stringify(requestBody),
             // Extended timeout for AI processing (10 minutes)
-            signal: AbortSignal.timeout(600000),
+            signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         // Handle HTTP errors
         if (!response.ok) {

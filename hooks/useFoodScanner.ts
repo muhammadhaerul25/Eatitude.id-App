@@ -129,7 +129,27 @@ export const useFoodScanner = (): UseFoodScannerReturn => {
             }
 
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            let errorMessage = 'Unknown error occurred';
+
+            if (error instanceof Error) {
+                // Handle specific error types with user-friendly messages
+                if (error.message.includes('Image format not supported') ||
+                    error.message.includes('unsupported') ||
+                    error.message.includes('UnsupportedImageFormat')) {
+                    errorMessage = 'Image format not supported. Please try taking a new photo or selecting a different image.';
+                } else if (error.message.includes('InvalidParameter')) {
+                    errorMessage = 'Image quality issue. Please try a clearer, better-lit photo of the nutrition label.';
+                } else if (error.message.includes('Network') || error.message.includes('fetch')) {
+                    errorMessage = 'Network error. Please check your internet connection and try again.';
+                } else if (error.message.includes('timeout')) {
+                    errorMessage = 'Request timed out. Please try again with a smaller or clearer image.';
+                } else if (error.message.includes('400')) {
+                    errorMessage = 'Image processing failed. Please try a different image or take a new photo.';
+                } else {
+                    errorMessage = error.message;
+                }
+            }
+
             setState(prev => ({
                 ...prev,
                 isScanning: false,

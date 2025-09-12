@@ -99,14 +99,49 @@ export interface FoodScannerResult {
  */
 export const convertImageToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
+        console.log('🔄 Starting base64 conversion for:', {
+            name: file.name,
+            type: file.type,
+            size: file.size
+        });
+
         const reader = new FileReader();
         reader.onload = () => {
-            const base64String = reader.result as string;
-            // Remove data URL prefix to get pure base64
-            const base64Data = base64String.split(',')[1];
-            resolve(base64Data);
+            try {
+                const base64String = reader.result as string;
+                console.log('📄 FileReader result details:', {
+                    totalLength: base64String.length,
+                    hasDataPrefix: base64String.startsWith('data:'),
+                    dataPrefix: base64String.split(',')[0],
+                    firstCharsAfterComma: base64String.split(',')[1]?.substring(0, 50)
+                });
+
+                // Remove data URL prefix to get pure base64
+                const base64Data = base64String.split(',')[1];
+
+                if (!base64Data || base64Data.length === 0) {
+                    console.error('🚨 Base64 conversion failed - no data after comma');
+                    reject(new Error('Failed to extract base64 data from FileReader result'));
+                    return;
+                }
+
+                console.log('✅ Base64 conversion successful:', {
+                    pureBase64Length: base64Data.length,
+                    estimatedSizeKB: Math.round(base64Data.length * 0.75 / 1024),
+                    firstChars: base64Data.substring(0, 50),
+                    lastChars: base64Data.substring(base64Data.length - 20)
+                });
+
+                resolve(base64Data);
+            } catch (error) {
+                console.error('🚨 Error processing FileReader result:', error);
+                reject(new Error('Failed to process base64 conversion result'));
+            }
         };
-        reader.onerror = () => reject(new Error('Failed to convert image to base64'));
+        reader.onerror = (error) => {
+            console.error('🚨 FileReader error:', error);
+            reject(new Error('Failed to convert image to base64'));
+        };
         reader.readAsDataURL(file);
     });
 };
@@ -121,11 +156,12 @@ export const convertImageToBase64 = (file: File): Promise<string> => {
  */
 export async function scanFoodNutrition(imageFile: File): Promise<FoodScannerResult> {
     const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
-    const endpoint = `${API_BASE_URL}/generate_food_nutrition_estimation`;
+    const endpoint = `${API_BASE_URL}/generate_food_nutrition_estimation_base64`;
 
     try {
         console.log('🔍 Starting food nutrition scan...');
         console.log(`📁 Image file: ${imageFile.name}, Size: ${(imageFile.size / 1024).toFixed(2)}KB`);
+        console.log(`🌐 API Endpoint: ${endpoint}`);
 
         // Validate image file
         if (!imageFile.type.startsWith('image/')) {
@@ -137,21 +173,86 @@ export async function scanFoodNutrition(imageFile: File): Promise<FoodScannerRes
         }
 
         // Convert image to base64
-        console.log('📷 Image converted to base64');
+        console.log('📷 Converting image to base64...');
+        const base64Image = await convertImageToBase64(imageFile);
+        console.log('✅ Image converted to base64');
 
-        // Prepare form data (FastAPI expects multipart/form-data for file uploads)
-        const formData = new FormData();
-        formData.append('file', imageFile);
+        // For Android compatibility, try base64 approach instead of FormData
+        const requestBody = {
+            file: base64Image
+        };
 
         console.log('🚀 Sending image to AI food scanner...');
 
         // Make API call with extended timeout for AI processing
-        const response = await fetch(endpoint, {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout for AI processing
+
+        // Enhanced headers for better Android compatibility
+        const headers: HeadersInit = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json', // For base64 JSON approach
+        };
+
+        // Add User-Agent for Android compatibility
+        if (typeof navigator !== 'undefined' && navigator.userAgent) {
+            (headers as any)['User-Agent'] = navigator.userAgent;
+        }
+
+        console.log('🔧 Request details:', {
+            endpoint,
             method: 'POST',
-            body: formData, // Send as FormData, not JSON
-            // Don't set Content-Type header - let browser set it for FormData
-            signal: AbortSignal.timeout(300000), // 5 minutes timeout for AI processing
+            headers: JSON.stringify(headers),
+            bodySize: base64Image.length,
+            imageFileSize: imageFile ? imageFile.size : 'unknown',
+            fileName: imageFile ? imageFile.name : 'unknown'
         });
+
+        // Test basic connectivity first
+        console.log('🌐 Testing basic connectivity to domain...');
+        try {
+            // Use the same pattern as working APIs - Promise.race with timeout
+            const timeoutPromise = new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('Connectivity test timeout')), 10000)
+            );
+
+            const testResponse = await Promise.race([
+                fetch('https://eatitude-id-api.vercel.app/', {
+                    method: 'GET',
+                    headers: { 'Accept': 'text/html' },
+                }),
+                timeoutPromise
+            ]);
+            console.log('✅ Basic connectivity test:', testResponse.status, testResponse.statusText);
+        } catch (connectivityError) {
+            console.error('❌ Basic connectivity test failed:', connectivityError);
+            throw new Error(`Cannot reach API server: ${connectivityError instanceof Error ? connectivityError.message : 'Unknown connectivity error'}`);
+        }
+
+        console.log('🚀 Making actual API request...');
+
+        // Use the same timeout pattern as working APIs
+        const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Food scanner request timeout')), 300000)
+        );
+
+        const response = await Promise.race([
+            fetch(endpoint, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(requestBody), // Send as JSON with base64 image
+                // Additional options for Android compatibility
+                credentials: 'omit', // Don't send cookies
+                cache: 'no-cache',
+                redirect: 'follow',
+            }),
+            timeoutPromise
+        ]);
+
+        clearTimeout(timeoutId);
+
+        console.log(`📡 Response status: ${response.status} ${response.statusText}`);
+        console.log(`📡 Response headers:`, Object.fromEntries(response.headers.entries()));
 
         // Handle HTTP errors
         if (!response.ok) {
@@ -183,19 +284,52 @@ export async function scanFoodNutrition(imageFile: File): Promise<FoodScannerRes
     } catch (error) {
         console.error('❌ Failed to scan food nutrition:', error);
 
+        // Detailed error analysis
+        console.error('🔧 Detailed error analysis:', {
+            errorType: typeof error,
+            errorName: error instanceof Error ? error.name : 'Unknown',
+            errorMessage: error instanceof Error ? error.message : String(error),
+            errorStack: error instanceof Error ? error.stack : 'No stack trace',
+            errorCause: error instanceof Error ? error.cause : 'No cause',
+            isNetworkError: error instanceof Error && error.message.includes('Network'),
+            isTimeoutError: error instanceof Error && error.name === 'AbortError',
+            isFetchError: error instanceof Error && error.message.includes('fetch'),
+        });
+
+        // Check if it's a specific type of error
+        if (error instanceof TypeError && error.message === 'Network request failed') {
+            console.error('🚨 This is the classic React Native Android network error');
+            console.error('🔧 Possible causes:');
+            console.error('   1. Android network security policy blocking the request');
+            console.error('   2. DNS resolution failure');
+            console.error('   3. SSL certificate validation issue');
+            console.error('   4. Network permissions not granted');
+            console.error('   5. Proxy or firewall blocking the request');
+        }
+
         let errorMessage = 'Unknown error occurred during food scanning';
 
         if (error instanceof Error) {
             if (error.name === 'AbortError') {
                 errorMessage = 'Food scanning timed out. Please try again with a clearer image.';
-            } else if (error.message.includes('Failed to fetch') || error.message.includes('Network error')) {
-                errorMessage = 'Network error: Unable to connect to food scanner service.';
+            } else if (error.message.includes('Failed to fetch') || error.message.includes('Network error') || error.message.includes('fetch')) {
+                errorMessage = 'Network error: Unable to connect to food scanner service. Please check your internet connection.';
             } else if (error.message.includes('422')) {
                 errorMessage = 'Invalid image format. Please upload a clear photo of food.';
+            } else if (error.message.includes('Network request failed')) {
+                errorMessage = 'Network request failed. Please check your internet connection and try again.';
             } else {
                 errorMessage = error.message;
             }
         }
+
+        // Log additional debug information for network errors
+        console.error('🔧 Debug info:', {
+            errorName: error instanceof Error ? error.name : 'Unknown',
+            errorMessage: error instanceof Error ? error.message : String(error),
+            apiUrl: API_BASE_URL,
+            endpoint,
+        });
 
         return {
             success: false,
@@ -221,6 +355,9 @@ export async function scanFoodNutritionFromBase64(base64Image: string): Promise<
             file: base64Image,
         };
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
+
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
@@ -228,8 +365,10 @@ export async function scanFoodNutritionFromBase64(base64Image: string): Promise<
                 'Accept': 'application/json',
             },
             body: JSON.stringify(requestBody),
-            signal: AbortSignal.timeout(300000), // 5 minutes timeout
+            signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
             let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
@@ -261,7 +400,7 @@ export async function scanFoodNutritionFromBase64(base64Image: string): Promise<
         if (error instanceof Error) {
             if (error.name === 'AbortError') {
                 errorMessage = 'Food scanning timed out. Please try again.';
-            } else if (error.message.includes('Failed to fetch')) {
+            } else if (error.message.includes('Failed to fetch') || error.message.includes('fetch')) {
                 errorMessage = 'Network error: Unable to connect to food scanner service.';
             } else {
                 errorMessage = error.message;

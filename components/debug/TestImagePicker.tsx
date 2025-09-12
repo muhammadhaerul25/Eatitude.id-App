@@ -68,7 +68,7 @@ export default function TestImagePicker() {
 
             // Launch image picker
             const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                mediaTypes: 'images', // Use string value for modern API
                 allowsEditing: true,
                 aspect: [1, 1],
                 quality: 0.8,

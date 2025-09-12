@@ -6,6 +6,9 @@ import shutil
 import os
 import uvicorn
 import tempfile
+import base64
+import io
+from PIL import Image
 
 # Import your internal modules
 from ai_core.PersonalPlanner import PersonalPlanner
@@ -21,7 +24,7 @@ from ai_core.models.BytePlusProcessor import BytePlusProcessor
 app = FastAPI(
     title="Eatitude Nutrition API",
     version="1.0.0",
-    description="Scalable API for personalized nutrition, meal planning, and food analysis."
+    description="Scalable API for personalized nutrition, meal planning, and food analysis.",
 )
 
 # Enable CORS for frontend/mobile access
@@ -74,6 +77,10 @@ class NutritionAdvisorRequest(BaseModel):
     user_progress: Dict[str, Any]
 
 
+class Base64ImageRequest(BaseModel):
+    file: str  # Base64 encoded image data
+
+
 # ---------------------------------------------------
 # Utility Functions
 # ---------------------------------------------------
@@ -86,6 +93,34 @@ def save_temp_file(file: UploadFile) -> str:
             return tmp.name
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File saving failed: {str(e)}")
+
+
+def save_base64_image(base64_data: str) -> str:
+    """Save base64 image data to a temporary file and return the path."""
+    try:
+        # Decode base64 data
+        image_data = base64.b64decode(base64_data)
+
+        # Create PIL Image to validate and determine format
+        image = Image.open(io.BytesIO(image_data))
+
+        # Determine file extension
+        format_lower = image.format.lower() if image.format else "jpeg"
+        if format_lower == "jpeg":
+            suffix = ".jpg"
+        elif format_lower == "png":
+            suffix = ".png"
+        else:
+            suffix = ".jpg"  # Default to jpg
+
+        # Save to temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            tmp.write(image_data)
+            return tmp.name
+    except Exception as e:
+        raise HTTPException(
+            status_code=400, detail=f"Invalid base64 image data: {str(e)}"
+        )
 
 
 def cleanup_file(path: str):
@@ -112,7 +147,9 @@ async def generate_personal_plan(user_data: UserData):
     try:
         return PersonalPlanner.generate_personal_healthy_eating_plan(user_data.dict())
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate personal plan: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate personal plan: {str(e)}"
+        )
 
 
 @app.post("/generate_meal_plan", tags=["Meal Plan"])
@@ -120,11 +157,12 @@ async def generate_meal_plan(request: MealPlanRequest):
     """Generate daily meal plan based on user data and personal plan."""
     try:
         return MealPlanner.generate_meal_plan_per_day(
-            request.user_data,
-            request.personal_plan
+            request.user_data, request.personal_plan
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate meal plan: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate meal plan: {str(e)}"
+        )
 
 
 @app.post("/generate_food_nutrition_estimation", tags=["Food Scanner"])
@@ -134,21 +172,61 @@ async def generate_food_nutrition_estimation(file: UploadFile = File(...)):
     try:
         return FoodScanner.generate_food_nutrition_estimation(temp_path)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to estimate food nutrition: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to estimate food nutrition: {str(e)}"
+        )
     finally:
         cleanup_file(temp_path)
 
 
 @app.post("/generate_label_informasi_gizi_nutrition_estimation", tags=["Food Scanner"])
-async def generate_label_informasi_gizi_nutrition_estimation(file: UploadFile = File(...)):
+async def generate_label_informasi_gizi_nutrition_estimation(
+    file: UploadFile = File(...),
+):
     """Extract nutrition info from food label image."""
     temp_path = save_temp_file(file)
     try:
-        return LabelInformasiGiziScanner.generate_label_informasi_gizi_nutrition_estimation(temp_path)
+        return LabelInformasiGiziScanner.generate_label_informasi_gizi_nutrition_estimation(
+            temp_path
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to estimate label nutrition: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to estimate label nutrition: {str(e)}"
+        )
     finally:
         cleanup_file(temp_path)
+
+
+@app.post("/generate_food_nutrition_estimation_base64", tags=["Food Scanner"])
+async def generate_food_nutrition_estimation_base64(request: Base64ImageRequest):
+    """Estimate nutrition from a food photo (base64 format) - Optimized for Android."""
+    try:
+        # Use optimized method that processes base64 directly
+        # This avoids unnecessary file system operations and double base64 conversion
+        return FoodScanner.generate_food_nutrition_estimation_from_base64(request.file)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to estimate food nutrition: {str(e)}"
+        )
+
+
+@app.post(
+    "/generate_label_informasi_gizi_nutrition_estimation_base64", tags=["Food Scanner"]
+)
+async def generate_label_informasi_gizi_nutrition_estimation_base64(
+    request: Base64ImageRequest,
+):
+    """Extract nutrition info from food label image (base64 format) - Optimized for Android."""
+    try:
+        # Use optimized method that processes base64 directly
+        # This avoids unnecessary file system operations and double base64 conversion
+        return LabelInformasiGiziScanner.generate_label_informasi_gizi_nutrition_estimation_from_base64(
+            request.file
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to estimate label nutrition: {str(e)}"
+        )
 
 
 @app.post("/generate_nutrition_advisor", tags=["Nutrition Advisor"])
@@ -159,10 +237,12 @@ async def generate_nutrition_advisor(request: NutritionAdvisorRequest):
             request.user_data,
             request.personal_plan,
             request.meal_plan,
-            request.user_progress
+            request.user_progress,
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate nutrition advice: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate nutrition advice: {str(e)}"
+        )
 
 
 # ---------------------------------------------------
@@ -173,5 +253,5 @@ if __name__ == "__main__":
         "API:app",
         host=os.getenv("HOST", "0.0.0.0"),
         port=int(os.getenv("PORT", 8000)),
-        reload=True
+        reload=True,
     )

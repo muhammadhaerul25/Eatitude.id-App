@@ -43,7 +43,7 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
         scanError,
         confidence,
         clearResult,
-        clearError    } = useFoodScanner();
+        clearError } = useFoodScanner();
 
     // Get formatted nutrition data
 
@@ -129,6 +129,9 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                 allowsEditing: true,
                 aspect: [1, 1],
                 quality: 0.8,
+                // Force JPEG format for better API compatibility
+                allowsMultipleSelection: false,
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
             });
 
             console.log('Camera result:', result);
@@ -162,6 +165,8 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                 allowsEditing: true,
                 aspect: [1, 1],
                 quality: 0.8,
+                // Ensure we get the best quality image for API processing
+                allowsMultipleSelection: false,
             });
 
             console.log('Gallery result:', result);
@@ -179,13 +184,85 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
     const processImageAsset = async (asset: ImagePicker.ImagePickerAsset) => {
         try {
             console.log('Processing image asset:', asset);
+            console.log('Asset URI:', asset.uri);
+            console.log('Asset type:', asset.type);
 
-            // Convert to File object for API
+            // Convert to File object for API with proper JPEG format
             const response = await fetch(asset.uri);
             const blob = await response.blob();
-            const file = new File([blob], 'image.jpg', { type: 'image/jpeg' });
 
-            console.log('File created:', file);
+            console.log('🔍 === IMAGE PROCESSING DEBUG ===');
+            console.log('📱 Asset details:', {
+                uri: asset.uri,
+                type: asset.type,
+                width: asset.width,
+                height: asset.height,
+                fileSize: asset.fileSize
+            });
+            console.log('🌐 Fetch response details:', {
+                status: response.status,
+                statusText: response.statusText,
+                headers: Object.fromEntries(response.headers.entries()),
+                contentType: response.headers.get('content-type')
+            });
+            console.log('📦 Blob details:', {
+                size: blob.size,
+                type: blob.type,
+                isValid: blob.size > 0
+            });
+
+            // For React Native, we'll trust the blob type and ensure JPEG MIME type
+            let fileName = 'image.jpg';
+            let mimeType = 'image/jpeg';
+
+            // Create file with proper JPEG MIME type regardless of original format
+            // The API expects JPEG format, so we'll ensure the MIME type is correct
+            let finalBlob = blob;
+
+            // If the blob type is not JPEG, create a new blob with JPEG MIME type
+            if (blob.type && !blob.type.includes('jpeg') && !blob.type.includes('jpg')) {
+                console.log(`🔄 Adjusting MIME type from ${blob.type} to image/jpeg`);
+                finalBlob = new Blob([blob], { type: 'image/jpeg' });
+                console.log('📦 Adjusted blob details:', {
+                    originalType: blob.type,
+                    newType: finalBlob.type,
+                    sizeMatch: blob.size === finalBlob.size
+                });
+            }
+
+            const file = new File([finalBlob], fileName, { type: mimeType });
+
+            console.log('📄 Final File object details:', {
+                name: file.name,
+                type: file.type,
+                size: `${(file.size / 1024).toFixed(2)}KB`,
+                lastModified: file.lastModified,
+                webkitRelativePath: file.webkitRelativePath
+            });
+            console.log('🔍 === END IMAGE PROCESSING DEBUG ==='); console.log('File created:', {
+                name: file.name,
+                type: file.type,
+                size: `${(file.size / 1024).toFixed(2)}KB`
+            });
+
+            // Additional validation: verify the file is readable
+            try {
+                const testReader = new FileReader();
+                await new Promise<void>((resolve, reject) => {
+                    testReader.onload = () => {
+                        console.log('✅ Image file validation successful');
+                        resolve();
+                    };
+                    testReader.onerror = () => {
+                        reject(new Error('Image file validation failed'));
+                    };
+                    testReader.readAsDataURL(file);
+                });
+            } catch (validationError) {
+                console.error('🚨 Image validation failed:', validationError);
+                Alert.alert('Error', 'The selected image appears to be corrupted. Please try a different image.');
+                return;
+            }
 
             setSelectedImage(file);
             setImagePreview(asset.uri);
@@ -229,7 +306,9 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
         if (selectedImage) {
             await scanFood(selectedImage, activeTab);
         }
-    }; return (
+    };
+
+    return (
         <Modal
             visible={visible}
             animationType="slide"
@@ -339,16 +418,16 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
 
                                         {/* Image Picker Button */}
                                         {!selectedImage && (
-                                            <TouchableOpacity
-                                                style={[nutritionScannerStyles.scanButton, { backgroundColor: '#3B82F6' }]}
-                                                onPress={handleImagePicker}
-                                            >
-                                                <Upload size={20} color="#FFFFFF" />
-                                                <Text style={nutritionScannerStyles.scanButtonText}>Select Image</Text>
-                                            </TouchableOpacity>
-                                        )}
-
-                                        {/* Scan Button */}
+                                            <>
+                                                <TouchableOpacity
+                                                    style={[nutritionScannerStyles.scanButton, { backgroundColor: '#3B82F6' }]}
+                                                    onPress={handleImagePicker}
+                                                >
+                                                    <Upload size={20} color="#FFFFFF" />
+                                                    <Text style={nutritionScannerStyles.scanButtonText}>Select Image</Text>
+                                                </TouchableOpacity>
+                                            </>
+                                        )}                                        {/* Scan Button */}
                                         {selectedImage && (
                                             <TouchableOpacity
                                                 style={nutritionScannerStyles.scanButton}

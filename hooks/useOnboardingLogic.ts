@@ -14,6 +14,26 @@ export const useOnboardingLogic = () => {
     const validateCurrentStep = (): boolean => {
         switch (currentStep) {
             case 0:
+                return profile.nama.trim() !== '' &&
+                    validateUsia(profile.usia) &&
+                    profile.jenis_kelamin !== '';
+            case 1:
+                return validateBeratBadan(profile.berat_badan) &&
+                    validateTinggiBadan(profile.tinggi_badan);
+            case 2:
+                return profile.tingkat_aktivitas !== '' &&
+                    validateWaktu(profile.waktu_bangun) &&
+                    validateWaktu(profile.waktu_tidur);
+            case 3:
+                return profile.tujuan !== '';
+            default:
+                return true;
+        }
+    };
+
+    const validateWithAlerts = (): boolean => {
+        switch (currentStep) {
+            case 0:
                 if (profile.nama.trim() === '') {
                     Alert.alert('Validation Error', 'Silakan masukkan nama Anda.');
                     return false;
@@ -133,13 +153,15 @@ export const useOnboardingLogic = () => {
     };
 
     const nextStep = (): void => {
-        if (!validateCurrentStep()) {
-            return;
-        }
-
         if (currentStep < steps.length - 1) {
+            if (!validateWithAlerts()) {
+                return;
+            }
             setCurrentStep(currentStep + 1);
         } else {
+            if (!validateWithAlerts()) {
+                return;
+            }
             completeOnboarding();
         }
     };
