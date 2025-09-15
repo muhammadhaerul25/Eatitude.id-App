@@ -50,8 +50,8 @@ export default function OnboardingScreen() {
       {/* Loading Overlay for Plan Generation */}
       <LoadingOverlay
         visible={isGeneratingPlan}
-        title="NutriAdvisor AI sedang menyusun rencana nutrisi Anda."
-        subtitle="Proses ini mungkin memakan waktu hingga 1-3 menit."
+        title="NutriAdvisor AI sedang menyusun rencana nutrisi Anda"
+        subtitle="Proses ini mungkin memakan waktu hingga 1-3 menit"
       />
 
       {/* Header */}

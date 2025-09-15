@@ -324,12 +324,12 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                         </TouchableOpacity>
                         <View>
                             <Text style={nutritionScannerStyles.headerTitle}>AI Food Scanner</Text>
-                            <Text style={nutritionScannerStyles.headerSubtitle}>Powered by Eatitude AI</Text>
+                            <Text style={nutritionScannerStyles.headerSubtitle}>Powered by NutriAdvisor AI</Text>
                         </View>
                     </View>
                     {scanResult && (
                         <TouchableOpacity onPress={handleReset} style={nutritionScannerStyles.resetButton}>
-                            <Text style={nutritionScannerStyles.resetButtonText}>Scan Again</Text>
+                            <Text style={nutritionScannerStyles.resetButtonText}>Scan Lagi</Text>
                         </TouchableOpacity>
                     )}
                 </View>
@@ -343,7 +343,7 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                         >
                             <Camera size={16} color={activeTab === 'meal' ? '#111827' : '#6B7280'} />
                             <Text style={[nutritionScannerStyles.tabText, activeTab === 'meal' && nutritionScannerStyles.activeTabText]}>
-                                Scan Meal
+                                Scan Makanan
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -352,7 +352,7 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                         >
                             <Info size={16} color={activeTab === 'label' ? '#111827' : '#6B7280'} />
                             <Text style={[nutritionScannerStyles.tabText, activeTab === 'label' && nutritionScannerStyles.activeTabText]}>
-                                Scan Label
+                                Scan Label Gizi
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -365,18 +365,18 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                             <View style={nutritionScannerStyles.scanSection}>
                                 <View style={nutritionScannerStyles.titleContainer}>
                                     <Zap size={24} color="#10B981" />
-                                    <Text style={nutritionScannerStyles.scanTitle}>Scan Your Meal</Text>
+                                    <Text style={nutritionScannerStyles.scanTitle}>Scan Makanan</Text>
                                 </View>
                                 <Text style={nutritionScannerStyles.scanDescription}>
-                                    Point your camera at any food to instantly get complete nutrition facts including calories, macros, and micronutrients.
+                                    Pindai makanan dengan kamera untuk mendapatkan informasi estimasi gizi termasuk kalori, makronutrisi, dan mikronutrisi
                                 </Text>
 
                                 {/* Tips */}
                                 <View style={nutritionScannerStyles.tipsContainer}>
-                                    <Text style={nutritionScannerStyles.tipsTitle}>Tips for better scanning:</Text>
-                                    <Text style={nutritionScannerStyles.tipsText}>• Ensure good lighting</Text>
-                                    <Text style={nutritionScannerStyles.tipsText}>• Center the food in frame</Text>
-                                    <Text style={nutritionScannerStyles.tipsText}>• Keep camera steady</Text>
+                                    <Text style={nutritionScannerStyles.tipsTitle}>Tips untuk pemindaian yang lebih baik:</Text>
+                                    <Text style={nutritionScannerStyles.tipsText}>• Pastikan pencahayaan yang baik</Text>
+                                    <Text style={nutritionScannerStyles.tipsText}>• Pusatkan makanan dalam area</Text>
+                                    <Text style={nutritionScannerStyles.tipsText}>• Jaga kamera tetap stabil</Text>
                                 </View>
 
                                 {/* Camera/Scan Area */}
@@ -390,7 +390,7 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                                         </View>
                                         <View style={nutritionScannerStyles.cameraPlaceholder}>
                                             <Camera size={48} color="#6B7280" />
-                                            <Text style={nutritionScannerStyles.cameraText}>Position food in center</Text>
+                                            <Text style={nutritionScannerStyles.cameraText}>Posisikan makanan di area ini</Text>
                                         </View>
 
                                         {/* Image Preview Section */}
@@ -424,7 +424,7 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                                                     onPress={handleImagePicker}
                                                 >
                                                     <Upload size={20} color="#FFFFFF" />
-                                                    <Text style={nutritionScannerStyles.scanButtonText}>Select Image</Text>
+                                                    <Text style={nutritionScannerStyles.scanButtonText}>Pilih Gambar Makanan</Text>
                                                 </TouchableOpacity>
                                             </>
                                         )}                                        {/* Scan Button */}
@@ -440,7 +440,7 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                                                     <Zap size={20} color="#FFFFFF" />
                                                 )}
                                                 <Text style={nutritionScannerStyles.scanButtonText}>
-                                                    {isScanning ? 'Analyzing...' : 'Scan Food'}
+                                                    {isScanning ? 'Analisis...' : 'Foto Makanan'}
                                                 </Text>
                                             </TouchableOpacity>
                                         )}
@@ -451,11 +451,19 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                             <View style={nutritionScannerStyles.scanSection}>
                                 <View style={nutritionScannerStyles.titleContainer}>
                                     <Info size={24} color="#3B82F6" />
-                                    <Text style={nutritionScannerStyles.scanTitle}>Scan Nutrition Label</Text>
+                                    <Text style={nutritionScannerStyles.scanTitle}>Scan Label Gizi</Text>
                                 </View>
                                 <Text style={nutritionScannerStyles.scanDescription}>
-                                    Scan the nutrition facts label on packaged foods to get accurate nutritional information.
+                                    Pindai label fakta gizi pada makanan kemasan untuk mendapatkan informasi gizi yang akurat
                                 </Text>
+
+                                {/* Tips */}
+                                <View style={nutritionScannerStyles.tipsContainer}>
+                                    <Text style={nutritionScannerStyles.tipsTitle}>Tips untuk pemindaian yang lebih baik:</Text>
+                                    <Text style={nutritionScannerStyles.tipsText}>• Pastikan pencahayaan yang baik</Text>
+                                    <Text style={nutritionScannerStyles.tipsText}>• Pusatkan makanan dalam area</Text>
+                                    <Text style={nutritionScannerStyles.tipsText}>• Jaga kamera tetap stabil</Text>
+                                </View>
 
                                 {/* Camera/Scan Area for Label */}
                                 <View style={nutritionScannerStyles.scanArea}>
@@ -521,7 +529,7 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                                                 onPress={handleImagePicker}
                                             >
                                                 <Upload size={20} color="#FFFFFF" />
-                                                <Text style={nutritionScannerStyles.scanButtonText}>Select Label Image</Text>
+                                                <Text style={nutritionScannerStyles.scanButtonText}>Pilih Gambar Label</Text>
                                             </TouchableOpacity>
                                         )}
 
@@ -538,7 +546,7 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                                                     <Info size={20} color="#FFFFFF" />
                                                 )}
                                                 <Text style={nutritionScannerStyles.scanButtonText}>
-                                                    {isScanning ? 'Analyzing...' : 'Analyze Label'}
+                                                    {isScanning ? 'Analisis...' : 'Label Gizi'}
                                                 </Text>
                                             </TouchableOpacity>
                                         )}
@@ -559,9 +567,9 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                             <View style={nutritionScannerStyles.scanningAnimation}>
                                 <Zap size={48} color="#10B981" />
                             </View>
-                            <Text style={nutritionScannerStyles.scanningTitle}>Analyzing your food...</Text>
+                            <Text style={nutritionScannerStyles.scanningTitle}>Analisis foto makanan...</Text>
                             <Text style={nutritionScannerStyles.scanningDescription}>
-                                Our AI is processing the image and calculating nutrition facts
+                                NutriAdvisor AI sedang memproses gambar dan menghitung fakta nutrisi
                             </Text>
                             <View style={nutritionScannerStyles.progressBar}>
                                 <View style={nutritionScannerStyles.progressBarFill} />
@@ -603,24 +611,24 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                     <ScrollView style={nutritionScannerStyles.resultsContainer} showsVerticalScrollIndicator={false}>
                         <View style={nutritionScannerStyles.resultsHeader}>
                             <CheckCircle size={24} color="#10B981" />
-                            <Text style={nutritionScannerStyles.resultsTitle}>Scan Complete!</Text>
+                            <Text style={nutritionScannerStyles.resultsTitle}>Scan Berhasil!</Text>
                         </View>
 
                         {/* Confidence Score */}
                         <View style={nutritionScannerStyles.confidenceCard}>
-                            <Text style={nutritionScannerStyles.confidenceLabel}>Analysis Confidence</Text>
+                            <Text style={nutritionScannerStyles.confidenceLabel}>Analisis Akurasi</Text>
                             <View style={nutritionScannerStyles.confidenceBar}>
                                 <View style={[nutritionScannerStyles.confidenceBarFill, { width: `${confidence || 85}%` }]} />
                             </View>
-                            <Text style={nutritionScannerStyles.confidenceText}>{confidence || 85}% accurate</Text>
+                            <Text style={nutritionScannerStyles.confidenceText}>{confidence || 85}% akurat</Text>
                         </View>
 
                         {/* Quick Summary */}
                         <View style={nutritionScannerStyles.summaryCard}>
-                            <Text style={nutritionScannerStyles.summaryTitle}>Quick Summary</Text>
+                            <Text style={nutritionScannerStyles.summaryTitle}>Informasi Gizi</Text>
                             <View style={nutritionScannerStyles.summaryRow}>
                                 <View style={nutritionScannerStyles.summaryItem}>
-                                    <Text style={nutritionScannerStyles.summaryLabel}>Calories</Text>
+                                    <Text style={nutritionScannerStyles.summaryLabel}>Kalori</Text>
                                     <Text style={nutritionScannerStyles.summaryValue}>
                                         {scanResult["estimasi_total_kalori_(kcal)"]}
                                     </Text>
@@ -634,9 +642,9 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                                     </View>
                                 </View>
                                 <View style={nutritionScannerStyles.summaryItem}>
-                                    <Text style={nutritionScannerStyles.summaryLabel}>Protein</Text>
-                                    <Text style={nutritionScannerStyles.summaryValue}>
-                                        {scanResult.estimasi_kandungan_makronutrisi["protein_(g)"]}g
+                                    <Text style={nutritionScannerStyles.summaryLabel}>Status</Text>
+                                    <Text style={nutritionScannerStyles.summaryValueSmall}>
+                                        {scanResult.nutri_status}
                                     </Text>
                                 </View>
                             </View>
@@ -795,10 +803,10 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                         <View style={nutritionScannerStyles.actionButtons}>
                             <TouchableOpacity style={nutritionScannerStyles.saveButton} onPress={handleSaveFood}>
                                 <Save size={20} color="#FFFFFF" />
-                                <Text style={nutritionScannerStyles.saveButtonText}>Save Food</Text>
+                                <Text style={nutritionScannerStyles.saveButtonText}>Simpan Makanan</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={nutritionScannerStyles.cancelButton} onPress={onClose}>
-                                <Text style={nutritionScannerStyles.cancelButtonText}>Cancel</Text>
+                                <Text style={nutritionScannerStyles.cancelButtonText}>Batal</Text>
                             </TouchableOpacity>
                         </View>
 

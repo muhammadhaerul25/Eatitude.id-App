@@ -618,10 +618,10 @@ export default function IndexScreen() {
         <SafeAreaView style={indexTabStyles.modalContainer}>
           <View style={indexTabStyles.modalHeader}>
             <Text style={indexTabStyles.modalTitle}>
-              {getMealTitle(selectedMeal?.type || '')} Detail
+              {getMealTitle(selectedMeal?.type || '')}
             </Text>
             <TouchableOpacity onPress={() => setShowMealModal(false)}>
-              <Text style={indexTabStyles.closeButton}>Done</Text>
+              <Text style={indexTabStyles.closeButton}>Tutup</Text>
             </TouchableOpacity>
           </View>
 
@@ -742,12 +742,12 @@ export default function IndexScreen() {
             <View style={indexTabStyles.actionButtonsContainer}>
               <TouchableOpacity style={indexTabStyles.modalScanButton} onPress={() => setShowNutritionScanner(true)}>
                 <Scan size={20} color="#FFFFFF" />
-                <Text style={indexTabStyles.modalScanButtonText}>Scan Food</Text>
+                <Text style={indexTabStyles.modalScanButtonText}>Scan Makanan</Text>
               </TouchableOpacity>
               {/* TODO ganti icon plus jadi gear/edit/pencil */}
               <TouchableOpacity style={indexTabStyles.adjustButton}>
                 <Edit size={20} color="#3B82F6" />
-                <Text style={indexTabStyles.adjustButtonText}>Adjust Food</Text>
+                <Text style={indexTabStyles.adjustButtonText}>Atur Makanan</Text>
               </TouchableOpacity>
             </View>
 
@@ -808,7 +808,7 @@ export default function IndexScreen() {
                 }}
               >
                 <Text style={indexTabStyles.completedButtonText}>
-                  {selectedMeal?.status === 'completed' ? 'Completed ✓' : 'Mark as Completed'}
+                  {selectedMeal?.status === 'completed' ? 'Completed ✓' : 'Selesai'}
                 </Text>
               </TouchableOpacity>
 
@@ -825,7 +825,7 @@ export default function IndexScreen() {
                 }}
               >
                 <Text style={indexTabStyles.skippedButtonText}>
-                  {selectedMeal?.status === 'skipped' ? 'Skipped ✗' : 'Skip This Meal'}
+                  {selectedMeal?.status === 'skipped' ? 'Skipped ✗' : 'Batalkan'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -848,9 +848,9 @@ export default function IndexScreen() {
       {/* Loading Overlay */}
       <LoadingOverlay
         visible={isLoadingMealPlan || isGeneratingMealPlan}
-        title={isGeneratingMealPlan ? 'Generating your personalized meal plan...' : 'Loading meal plan...'}
+        title={isGeneratingMealPlan ? 'Generate jadwal makan...' : 'Loading...'}
         subtitle={(isGeneratingMealPlan || (isLoadingMealPlan && lastError?.includes('taking longer')))
-          ? 'AI processing may take up to 5 minutes. Please wait...'
+          ? 'NutriAdvisor AI sedang menyiapkan rekomendasi makanan. Mohon tunggu sebentar...'
           : undefined
         }
       />

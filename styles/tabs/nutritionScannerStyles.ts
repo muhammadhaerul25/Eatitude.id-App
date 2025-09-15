@@ -646,9 +646,16 @@ export const nutritionScannerStyles = StyleSheet.create({
         marginBottom: 4,
     },
     summaryValue: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: '700',
         color: '#111827',
+        textAlign: 'center',
+    },
+    summaryValueSmall: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#111827',
+        textAlign: 'center',
     },
     gradeBadgeSmall: {
         backgroundColor: '#10B981',
