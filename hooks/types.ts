@@ -98,5 +98,5 @@ export const labelTujuan = {
     maintain_weight: 'Menjaga Berat Badan',
     lose_weight: 'Menurunkan Berat Badan',
     gain_weight: 'Menambah Berat Badan',
-    manage_disease: 'Pengelolaan Penyakit'
+    manage_disease: 'Mengelola Penyakit'
 };

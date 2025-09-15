@@ -18,14 +18,14 @@ export const GoalsObjectivesStep: React.FC<GoalsObjectivesStepProps> = ({
     return (
         <View style={styles.stepContent}>
             <Heart size={48} color="#10B981" style={styles.stepIcon} />
-            <Text style={styles.stepTitle}>Goals & Objectives</Text>
+            <Text style={styles.stepTitle}>Kesehatan, Preferensi dan Tujuan</Text>
 
             <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>
-                    Select Your Primary Goal
+                    Pilih Tujuan Utama Anda
                     <Text style={styles.required}> *</Text>
                 </Text>
-                <Text style={styles.inputSubLabel}>Choose one that best describes your main objective:</Text>
+                <Text style={styles.inputSubLabel}>Pilih salah satu yang paling menggambarkan tujuan utama Anda:</Text>
                 <View style={styles.goalsGrid}>
                     {goalOptions.map((goalOption: { key: string; label: string; description: string }) => (
                         <TouchableOpacity
@@ -53,36 +53,36 @@ export const GoalsObjectivesStep: React.FC<GoalsObjectivesStepProps> = ({
             </View>
 
             <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Food Preferences (Optional)</Text>
+                <Text style={styles.inputLabel}>Preferensi Makanan (Opsional)</Text>
                 <TextInput
                     style={[styles.textInput, styles.textArea]}
                     value={profile.preferensi_makanan}
                     onChangeText={(text) => updateProfile({ preferensi_makanan: text })}
-                    placeholder="Describe your food preferences, favorite cuisines, dietary restrictions, etc."
+                    placeholder=""
                     multiline
                     numberOfLines={3}
                 />
             </View>
 
             <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Food Allergies (Optional)</Text>
+                <Text style={styles.inputLabel}>Alergi Makanan (Opsional)</Text>
                 <TextInput
                     style={[styles.textInput, styles.textArea]}
                     value={profile.alergi_makanan}
                     onChangeText={(text) => updateProfile({ alergi_makanan: text })}
-                    placeholder="e.g., Nuts, Dairy, Shellfish"
+                    placeholder=""
                     multiline
                     numberOfLines={2}
                 />
             </View>
 
             <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Health Conditions (Optional)</Text>
+                <Text style={styles.inputLabel}>Kondisi Kesehatan (Opsional)</Text>
                 <TextInput
                     style={[styles.textInput, styles.textArea]}
                     value={profile.kondisi_kesehatan}
                     onChangeText={(text) => updateProfile({ kondisi_kesehatan: text })}
-                    placeholder="e.g., Diabetes, Hypertension"
+                    placeholder=""
                     multiline
                     numberOfLines={2}
                 />

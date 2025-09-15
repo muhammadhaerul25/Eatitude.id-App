@@ -21,10 +21,10 @@ export const BodyMetricsStep: React.FC<BodyMetricsStepProps> = ({ profile, updat
     };
 
     const getBMICategory = (bmi: number): string => {
-        if (bmi < 18.5) return 'Underweight';
-        if (bmi < 25) return 'Normal Weight';
-        if (bmi < 30) return 'Overweight';
-        return 'Obese';
+        if (bmi < 18.5) return 'Kurus';
+        if (bmi < 25) return 'Normal';
+        if (bmi < 30) return 'Gemuk';
+        return 'Obesitas';
     };
 
     const getBMIColor = (bmi: number): string => {
@@ -39,15 +39,15 @@ export const BodyMetricsStep: React.FC<BodyMetricsStepProps> = ({ profile, updat
     return (
         <View style={styles.stepContent}>
             <Scale size={48} color="#10B981" style={styles.stepIcon} />
-            <Text style={styles.stepTitle}>Body Metrics</Text>
+            <Text style={styles.stepTitle}>Data Tubuh</Text>
 
             <View style={styles.metricsRow}>
                 <View style={styles.halfWidth}>
                     <NumberInput
-                        label="Weight"
+                        label="Berat Badan"
                         value={profile.berat_badan}
                         onChangeValue={(berat_badan) => updateProfile({ berat_badan })}
-                        placeholder="70"
+                        placeholder=""
                         min={20}
                         max={500}
                         suffix="kg"
@@ -57,10 +57,10 @@ export const BodyMetricsStep: React.FC<BodyMetricsStepProps> = ({ profile, updat
 
                 <View style={styles.halfWidth}>
                     <NumberInput
-                        label="Height"
+                        label="Tinggi Badan"
                         value={profile.tinggi_badan}
                         onChangeValue={(tinggi_badan) => updateProfile({ tinggi_badan })}
-                        placeholder="175"
+                        placeholder=""
                         min={50}
                         max={250}
                         suffix="cm"
@@ -71,7 +71,7 @@ export const BodyMetricsStep: React.FC<BodyMetricsStepProps> = ({ profile, updat
 
             {bmi && (
                 <View style={styles.bmiCard}>
-                    <Text style={styles.bmiTitle}>Your BMI</Text>
+                    <Text style={styles.bmiTitle}>Indeks Massa Tubuh</Text>
                     <Text style={[styles.bmiValue, { color: getBMIColor(bmi) }]}>
                         {bmi.toFixed(1)}
                     </Text>

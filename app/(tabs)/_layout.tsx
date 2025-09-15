@@ -32,7 +32,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Meal',
+          title: 'Jadwal',
           tabBarIcon: ({ size, color }) => (
             <Calendar size={18} color={color} />
           ),
@@ -50,7 +50,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="consultation"
         options={{
-          title: 'Consultation',
+          title: 'Konsultasi',
           tabBarIcon: ({ size, color }) => (
             <MessageCircle size={18} color={color} />
           ),

@@ -104,10 +104,10 @@ export const useFoodScanner = (): UseFoodScannerReturn => {
             let result: FoodScannerResult | NutritionLabelScannerResult;
 
             if (type === 'meal') {
-                console.log('🍽️ Scanning food meal...');
+                console.log('🍽️ Scanning foto makanan...');
                 result = await scanFoodNutrition(imageFile);
             } else {
-                console.log('🏷️ Scanning nutrition label...');
+                console.log('🏷️ Scanning label nutrisi...');
                 result = await scanNutritionLabel(imageFile);
             }
 
@@ -118,14 +118,14 @@ export const useFoodScanner = (): UseFoodScannerReturn => {
                     scanResult: result.data!,
                     confidence: result.confidence || null,
                 }));
-                console.log('✅ Scan completed successfully');
+                console.log('✅ Scan berhasil');
             } else {
                 setState(prev => ({
                     ...prev,
                     isScanning: false,
                     scanError: result.error || 'Unknown error occurred during scanning',
                 }));
-                console.error('❌ Scan failed:', result.error);
+                console.error('❌ Scan gagal:', result.error);
             }
 
         } catch (error) {

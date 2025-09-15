@@ -35,7 +35,7 @@ export default function IndexScreen() {
 
                 {/* Get Started Button */}
                 <TouchableOpacity style={welcomeStyles.getStartedButton} onPress={handleGetStarted}>
-                    <Text style={welcomeStyles.getStartedText}>Get Started</Text>
+                    <Text style={welcomeStyles.getStartedText}>Mulai</Text>
                     <ChevronRight size={20} color="#FFFFFF" />
                 </TouchableOpacity>
             </View>

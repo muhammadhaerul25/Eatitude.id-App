@@ -224,7 +224,7 @@ export default function ProgressScreen() {
       {/* Header */}
       <View style={progressTabStyles.header}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <Text style={progressTabStyles.headerTitle}>Progress Tracking</Text>
+          <Text style={progressTabStyles.headerTitle}>Pantau Progres</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity onPress={() => changeDate(-1)} style={{ padding: 5 }}>
               <Text style={{ fontSize: 18, color: '#10B981' }}>‹</Text>
@@ -238,7 +238,7 @@ export default function ProgressScreen() {
           </View>
         </View>
         <View style={progressTabStyles.periodSelector}>
-          {['day', 'week', 'month'].map((period) => (
+          {['Hari', 'Minggu', 'Bulan'].map((period) => (
             <TouchableOpacity
               key={period}
               style={[

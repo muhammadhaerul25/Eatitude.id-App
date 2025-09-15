@@ -14,11 +14,11 @@ export const ActivityRestStep: React.FC<ActivityRestStepProps> = ({ profile, upd
     return (
         <View style={styles.stepContent}>
             <Activity size={48} color="#10B981" style={styles.stepIcon} />
-            <Text style={styles.stepTitle}>Activity & Rest</Text>
+            <Text style={styles.stepTitle}>Aktivitas dan Istirahat</Text>
 
             <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>
-                    Activity Level
+                    Tingkat Aktivitas
                     <Text style={styles.required}> *</Text>
                 </Text>
                 <View style={styles.activityButtons}>
@@ -45,12 +45,12 @@ export const ActivityRestStep: React.FC<ActivityRestStepProps> = ({ profile, upd
             </View>
 
             <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Activity Notes (Optional)</Text>
+                <Text style={styles.inputLabel}>Catatan Aktivitas (Opsional)</Text>
                 <TextInput
                     style={[styles.textInput, styles.textArea]}
                     value={profile.catatan_aktivitas}
                     onChangeText={(text) => updateProfile({ catatan_aktivitas: text })}
-                    placeholder="Describe your typical activities or exercise routine..."
+                    placeholder=""
                     multiline
                     numberOfLines={3}
                 />
@@ -59,20 +59,20 @@ export const ActivityRestStep: React.FC<ActivityRestStepProps> = ({ profile, upd
             <View style={styles.timeRow}>
                 <View style={styles.halfWidth}>
                     <TimeInput
-                        label="Wake Time"
+                        label="Waktu Bangun"
                         value={profile.waktu_bangun}
                         onChangeValue={(waktu_bangun) => updateProfile({ waktu_bangun })}
-                        placeholder="06:00"
+                        placeholder=""
                         required
                     />
                 </View>
 
                 <View style={styles.halfWidth}>
                     <TimeInput
-                        label="Sleep Time"
+                        label="Waktu Tidur"
                         value={profile.waktu_tidur}
                         onChangeValue={(waktu_tidur) => updateProfile({ waktu_tidur })}
-                        placeholder="22:00"
+                        placeholder=""
                         required
                     />
                 </View>

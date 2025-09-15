@@ -408,7 +408,7 @@ export default function IndexScreen() {
       {/* Header */}
       <View style={indexTabStyles.header}>
         <TouchableOpacity onLongPress={handleDebug} delayLongPress={2000}>
-          <Text style={indexTabStyles.headerTitle}>Meal Planner</Text>
+          <Text style={indexTabStyles.headerTitle}>Jadwal Makan</Text>
         </TouchableOpacity>
         <View style={indexTabStyles.timeContainer}>
           <Clock size={16} color="#6B7280" />
@@ -450,8 +450,8 @@ export default function IndexScreen() {
         <Bell size={16} color="#F59E0B" />
         <Text style={indexTabStyles.reminderText}>
           {isToday
-            ? `Calories: ${completedCalories || 0}/${dailyCalorieTarget > 0 ? dailyCalorieTarget : totalCalories || 2000} kcal • Don't forget to drink water!`
-            : 'View your meal plan for this date • Don\'t forget to drink water!'
+            ? `Target Kalori: ${completedCalories || 0}/${dailyCalorieTarget > 0 ? dailyCalorieTarget : totalCalories || 2000} kcal • Jangan lupa minum air!`
+            : 'Lihat rencana makan Anda untuk tanggal ini • Jangan lupa minum air!'
           }
         </Text>
       </View>
@@ -538,7 +538,7 @@ export default function IndexScreen() {
                   indexTabStyles.mealFood,
                   meal.status === 'completed' && indexTabStyles.completedText
                 ]}>
-                  {meal.rekomendasi_menu}
+                  {"Dapatkan rekomendasi"}
                 </Text>
                 <Text style={indexTabStyles.mealCalories}>
                   Target: {meal.targetKalori} kcal
@@ -566,7 +566,7 @@ export default function IndexScreen() {
           <View style={{ flexDirection: 'row', gap: 12, marginBottom: 12 }}>
             <TouchableOpacity style={[indexTabStyles.actionButton, { backgroundColor: '#10B981' }]}>
               <Plus size={20} color="#FFFFFF" />
-              <Text style={indexTabStyles.actionButtonText}>Add Meal</Text>
+              <Text style={indexTabStyles.actionButtonText}>Tambahkan Menu</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -574,12 +574,12 @@ export default function IndexScreen() {
               onPress={() => setShowNutritionScanner(true)}
             >
               <Scan size={20} color="#FFFFFF" />
-              <Text style={indexTabStyles.actionButtonText}>Scan Food</Text>
+              <Text style={indexTabStyles.actionButtonText}>Scan Makanan</Text>
             </TouchableOpacity>
           </View>
 
           {/* Second row: Refresh and New Plan */}
-          <View style={{ flexDirection: 'row', gap: 12 }}>
+          {/* <View style={{ flexDirection: 'row', gap: 12 }}>
             <TouchableOpacity
               style={[indexTabStyles.actionButton, { backgroundColor: '#6B7280' }]}
               onPress={refreshMealPlan}
@@ -604,7 +604,7 @@ export default function IndexScreen() {
                 <Text style={[indexTabStyles.actionButtonText, { color: '#9CA3AF' }]}>Available Today</Text>
               </View>
             )}
-          </View>
+          </View> */}
         </View>
       </ScrollView>
 

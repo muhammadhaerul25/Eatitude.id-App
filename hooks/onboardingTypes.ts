@@ -22,8 +22,8 @@ export const defaultProfile: UserProfile = {
     tinggi_badan: null,
     tingkat_aktivitas: '',
     catatan_aktivitas: '',
-    waktu_bangun: '06:00',
-    waktu_tidur: '22:00',
+    waktu_bangun: '',
+    waktu_tidur: '',
     preferensi_makanan: '',
     alergi_makanan: '',
     kondisi_kesehatan: '',
@@ -67,34 +67,34 @@ export const steps = [
 ];
 
 export const activityLevels = [
-    { key: 'sedentary', label: 'Sedentary', description: 'No or rarely exercise' },
-    { key: 'light', label: 'Light', description: 'Exercise 1-3 times/week' },
-    { key: 'moderate', label: 'Moderate', description: 'Exercise 3-5 times/week' },
-    { key: 'active', label: 'Active', description: 'Exercise 6-7 times/week' },
-    { key: 'very_active', label: 'Very Active', description: 'Heavy exercise & physical work' }
+    { key: 'sedentary', label: 'Sedentari', description: 'Tidak atau jarang berolahraga' },
+    { key: 'light', label: 'Ringan', description: 'Olahraga 1-3 kali/minggu' },
+    { key: 'moderate', label: 'Sedang', description: 'Olahraga 3-5 kali/minggu' },
+    { key: 'active', label: 'Aktif', description: 'Olahraga 6-7 kali/minggu' },
+    { key: 'very_active', label: 'Sangat Aktif', description: 'Olahraga berat & pekerjaan fisik' }
 ];
 
 export const goalOptions = [
-    { key: 'improve_health', label: 'Improve Health', description: 'Focus on overall wellness' },
-    { key: 'maintain_weight', label: 'Maintain Weight', description: 'Keep current weight stable' },
-    { key: 'lose_weight', label: 'Lose Weight', description: 'Reduce body weight safely' },
-    { key: 'gain_weight', label: 'Gain Weight', description: 'Increase body weight healthily' },
-    { key: 'manage_disease', label: 'Manage Disease', description: 'Support medical condition management' }
+    { key: 'improve_health', label: 'Menjaga Kesehatan', description: '' },
+    { key: 'maintain_weight', label: 'Menjaga Berat Badan', description: '' },
+    { key: 'lose_weight', label: 'Mengurangi Berat Badan', description: '' },
+    { key: 'gain_weight', label: 'Menambah Berat Badan', description: '' },
+    { key: 'manage_disease', label: 'Mengelola Penyakit', description: '' }
 ];
 
 // Label mappings for display purposes
 export const activityLevelLabels: { [key: string]: string } = {
-    'sedentary': 'Sedentary',
-    'light': 'Light Activity',
-    'moderate': 'Moderate Activity',
-    'active': 'Active',
-    'very_active': 'Very Active'
+    'sedentary': 'Sedentari',
+    'light': 'Ringan',
+    'moderate': 'Sedang',
+    'active': 'Aktif',
+    'very_active': 'Sangat Aktif'
 };
 
 export const goalLabels: { [key: string]: string } = {
-    'improve_health': 'Improve Health',
-    'maintain_weight': 'Maintain Weight',
-    'lose_weight': 'Lose Weight',
-    'gain_weight': 'Gain Weight',
-    'manage_disease': 'Manage Disease'
+    'improve_health': 'Menjaga Kesehatan',
+    'maintain_weight': 'Menjaga Berat Badan',
+    'lose_weight': 'Mengurangi Berat Badan',
+    'gain_weight': 'Menambah Berat Badan',
+    'manage_disease': 'Mengelola Penyakit'
 };

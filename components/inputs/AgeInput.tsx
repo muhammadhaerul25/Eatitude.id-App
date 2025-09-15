@@ -39,7 +39,7 @@ export const AgeInput: React.FC<AgeInputProps> = ({
                     styles.pickerText,
                     !value && styles.pickerPlaceholder
                 ]}>
-                    {value ? `${value} years old` : 'Select your age'}
+                    {value ? `${value} tahun` : ''}
                 </Text>
             </TouchableOpacity>
 
@@ -52,7 +52,7 @@ export const AgeInput: React.FC<AgeInputProps> = ({
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Select Age</Text>
+                            <Text style={styles.modalTitle}>Input usia</Text>
                             <TouchableOpacity
                                 style={styles.modalCloseButton}
                                 onPress={() => setModalVisible(false)}
@@ -75,7 +75,7 @@ export const AgeInput: React.FC<AgeInputProps> = ({
                                         styles.ageItemText,
                                         value === age && styles.ageItemTextSelected
                                     ]}>
-                                        {age} years old
+                                        {age} tahun
                                     </Text>
                                 </TouchableOpacity>
                             ))}

@@ -14,23 +14,23 @@ export const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({ profile, upd
     return (
         <View style={styles.stepContent}>
             <User size={48} color="#10B981" style={styles.stepIcon} />
-            <Text style={styles.stepTitle}>Tell us about yourself</Text>
+            <Text style={styles.stepTitle}>Beritahu tentang diri Anda</Text>
 
             <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>
-                    Full Name
+                    Nama Lengkap
                     <Text style={styles.required}> *</Text>
                 </Text>
                 <TextInput
                     style={styles.textInput}
                     value={profile.nama}
                     onChangeText={(text) => updateProfile({ nama: text })}
-                    placeholder="Enter your name"
+                    placeholder=""
                 />
             </View>
 
             <AgeInput
-                label="Age"
+                label="Usia"
                 value={profile.usia}
                 onChangeValue={(usia: number | null) => updateProfile({ usia })}
                 required
@@ -38,7 +38,7 @@ export const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({ profile, upd
 
             <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>
-                    Gender
+                    Jenis Kelamin
                     <Text style={styles.required}> *</Text>
                 </Text>
                 <View style={styles.genderButtons}>
@@ -52,7 +52,7 @@ export const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({ profile, upd
                         <Text style={[
                             styles.genderButtonText,
                             profile.jenis_kelamin === 'male' && styles.genderButtonTextActive
-                        ]}>Male</Text>
+                        ]}>Laki-laki</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -65,7 +65,7 @@ export const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({ profile, upd
                         <Text style={[
                             styles.genderButtonText,
                             profile.jenis_kelamin === 'female' && styles.genderButtonTextActive
-                        ]}>Female</Text>
+                        ]}>Perempuan</Text>
                     </TouchableOpacity>
                 </View>
             </View>

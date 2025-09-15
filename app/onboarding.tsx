@@ -50,8 +50,8 @@ export default function OnboardingScreen() {
       {/* Loading Overlay for Plan Generation */}
       <LoadingOverlay
         visible={isGeneratingPlan}
-        title="Generating Your Personal Plan"
-        subtitle="AI is analyzing your profile and creating a personalized nutrition plan. This process may take up to 5 minutes."
+        title="NutriAdvisor AI sedang menyusun rencana nutrisi Anda."
+        subtitle="Proses ini mungkin memakan waktu hingga 1-3 menit."
       />
 
       {/* Header */}
@@ -61,7 +61,7 @@ export default function OnboardingScreen() {
           style={onboardingStyles.appLogo}
           resizeMode="contain"
         />
-        <Text style={onboardingStyles.welcomeText}>Let&apos;s personalize your experience</Text>
+        <Text style={onboardingStyles.welcomeText}>Personalisasi pengalaman Anda</Text>
 
         {/* Progress Indicator */}
         <View style={onboardingStyles.progressContainer}>
@@ -86,7 +86,7 @@ export default function OnboardingScreen() {
       <View style={onboardingStyles.navigation}>
         {currentStep > 0 && (
           <TouchableOpacity style={onboardingStyles.backButton} onPress={prevStep}>
-            <Text style={onboardingStyles.backButtonText}>Back</Text>
+            <Text style={onboardingStyles.backButtonText}>Kembali</Text>
           </TouchableOpacity>
         )}
 
@@ -106,8 +106,8 @@ export default function OnboardingScreen() {
             {isGeneratingPlan
               ? 'Generating Plan...'
               : currentStep === steps.length - 1
-                ? 'Get Started'
-                : 'Continue'
+                ? 'Mulai Sekarang'
+                : 'Selanjutnya'
             }
           </Text>
           {!isGeneratingPlan && (

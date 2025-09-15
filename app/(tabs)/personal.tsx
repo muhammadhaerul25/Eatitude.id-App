@@ -61,7 +61,7 @@ export default function PersonalScreen() {
     <SafeAreaView style={personalStyles.container}>
       {/* Header */}
       <View style={personalStyles.header}>
-        <Text style={personalStyles.headerTitle}>Rencana Personal</Text>
+        <Text style={personalStyles.headerTitle}>Rencana Nutrisi Personal</Text>
         <TouchableOpacity style={personalStyles.editButton}>
           <Edit3 size={20} color="#10B981" />
         </TouchableOpacity>
@@ -87,7 +87,7 @@ export default function PersonalScreen() {
         <NutritionSections nutritionPlan={nutritionPlan} />
 
         {/* Action Buttons */}
-        <View style={personalStyles.actionContainer}>
+        {/* <View style={personalStyles.actionContainer}>
           <TouchableOpacity
             style={[personalStyles.actionButton, { backgroundColor: '#10B981' }]}
             onPress={generateNutritionPlan}
@@ -104,7 +104,7 @@ export default function PersonalScreen() {
             >
             <Text style={personalStyles.actionButtonText}>Lihat Progress</Text>
             </TouchableOpacity>
-        </View>
+        </View> */}
 
         <View style={personalStyles.bottomSpacing} />
       </ScrollView>

@@ -326,28 +326,28 @@ export default function ConsultScreen() {
       {
         id: '1',
         type: 'insight',
-        title: 'Today\'s Insight',
+        title: 'Insight',
         description: todaysAnalysis.insight,
         icon: <TrendingUp size={20} color="#10B981" />,
       },
       {
         id: '2',
         type: 'recommendation',
-        title: 'Recommendation',
+        title: 'Rekomendasi',
         description: todaysAnalysis.recommendation,
         icon: <User size={20} color="#3B82F6" />,
       },
       {
         id: '3',
         type: 'reminder',
-        title: 'Daily Reminder',
+        title: 'Pengingat Harian',
         description: todaysAnalysis.reminder,
         icon: <Bell size={20} color="#F59E0B" />,
       },
       {
         id: '4',
         type: 'alert',
-        title: 'Important Alert',
+        title: 'Peringatan Penting',
         description: todaysAnalysis.alert,
         icon: <AlertTriangle size={20} color="#EF4444" />,
       },
@@ -470,7 +470,7 @@ export default function ConsultScreen() {
     <SafeAreaView style={consultationTabStyles.container}>
       {/* Header */}
       <View style={consultationTabStyles.header}>
-        <Text style={consultationTabStyles.headerTitle}>NutriAdvisor</Text>
+        <Text style={consultationTabStyles.headerTitle}>Konsultasi</Text>
       </View>
 
       <KeyboardAvoidingView
@@ -478,9 +478,9 @@ export default function ConsultScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView style={consultationTabStyles.content} showsVerticalScrollIndicator={false}>
-          {/* Today's Insights */}
+          {/* Analisis Hari Ini */}
           <View style={consultationTabStyles.section}>
-            <Text style={consultationTabStyles.sectionTitle}>Today&apos;s Analysis</Text>
+            <Text style={consultationTabStyles.sectionTitle}>Analisis Hari Ini</Text>
 
             {isGeneratingAdvice || isLoadingAnalysis ? (
               <View style={[
@@ -576,7 +576,7 @@ export default function ConsultScreen() {
 
           {/* Chat Messages */}
           <View style={consultationTabStyles.section}>
-            <Text style={consultationTabStyles.sectionTitle}>NutriBot</Text>
+            <Text style={consultationTabStyles.sectionTitle}>Nutrisionist</Text>
 
             <View style={consultationTabStyles.chatContainer}>
               {messages.map((message) => (
@@ -676,7 +676,7 @@ export default function ConsultScreen() {
             style={consultationTabStyles.textInput}
             value={inputText}
             onChangeText={setInputText}
-            placeholder="Ask about nutrition, meal plans, or health tips..."
+            placeholder=""
             multiline
             maxLength={500}
             editable={!isGeneratingAdvice}
