@@ -1,3 +1,0 @@
-requests
-python-dotenv
-byteplus-python-sdk-v2

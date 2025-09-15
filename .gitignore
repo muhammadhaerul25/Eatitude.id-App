@@ -79,3 +79,7 @@ yarn-error.*
 
 # @end expo-cli
 android/
+
+# others
+TODO.md
+test.py
