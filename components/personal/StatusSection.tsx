@@ -40,7 +40,7 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
                     <View style={personalStyles.waitingNotice}>
                         <AlertTriangle size={16} color="#F59E0B" />
                         <Text style={personalStyles.waitingText}>
-                            Rencana Anda perlu disetujui oleh ahli gizi terlebih dahulu
+                            Rencana nutrisi Anda perlu disetujui oleh ahli gizi terlebih dahulu!
                         </Text>
                     </View>
                 )}

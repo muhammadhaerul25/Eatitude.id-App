@@ -260,6 +260,7 @@ export const personalStyles = StyleSheet.create({
         fontSize: 14,
         color: '#6B7280',
         lineHeight: 20,
+        textAlign: 'justify',
     },
     actionContainer: {
         gap: 12,

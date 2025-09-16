@@ -547,11 +547,11 @@ export default function ConsultScreen() {
               ]}>
                 <View style={consultationTabStyles.insightHeader}>
                   <Bot size={20} color="#6B7280" />
-                  <Text style={consultationTabStyles.insightTitle}>No Analysis Available</Text>
+                  <Text style={consultationTabStyles.insightTitle}>Belum Ada Analisis</Text>
                 </View>
                 <Text style={consultationTabStyles.insightDescription}>
-                  Get your personalized nutrition analysis by clicking &quot;Get AI Nutrition Analysis&quot; below.
-                  Our AI will analyze your profile and meal plans to provide insights, recommendations, and alerts.
+                  Dapatkan analisis nutrisi pribadi Anda dengan mengklik &quot;Dapatkan Analisis Nutrisi AI&quot; di bawah ini.
+                  NutriAdvisor AI akan menganalisis profil dan rencana makan Anda untuk memberikan insight, rekomendasi, pengingat, dan peringatan.
                 </Text>
                 <TouchableOpacity
                   style={{

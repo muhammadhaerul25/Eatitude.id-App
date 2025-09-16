@@ -50,7 +50,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                     <Text style={personalStyles.profileValue}>{profile.tinggi_badan} cm</Text>
                 </View>
                 <View style={personalStyles.bmiRow}>
-                    <Text style={personalStyles.bmiLabel}>Indeks Massa Tubuh (BMI)</Text>
+                    <Text style={personalStyles.bmiLabel}>Indeks Massa Tubuh (IMT)</Text>
                     <Text style={[personalStyles.bmiValue, { color: bmiCategory.color }]}>
                         {getBMI()} ({bmiCategory.category})
                     </Text>

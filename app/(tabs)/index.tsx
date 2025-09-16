@@ -566,7 +566,7 @@ export default function IndexScreen() {
           <View style={{ flexDirection: 'row', gap: 12, marginBottom: 12 }}>
             <TouchableOpacity style={[indexTabStyles.actionButton, { backgroundColor: '#10B981' }]}>
               <Plus size={20} color="#FFFFFF" />
-              <Text style={indexTabStyles.actionButtonText}>Tambahkan Menu</Text>
+              <Text style={indexTabStyles.actionButtonText}>Tambah Menu</Text>
             </TouchableOpacity>
 
             <TouchableOpacity

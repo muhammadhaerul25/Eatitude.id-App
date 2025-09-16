@@ -41,7 +41,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="progress"
         options={{
-          title: 'Progress',
+          title: 'Progres',
           tabBarIcon: ({ size, color }) => (
             <BarChart3 size={18} color={color} />
           ),
