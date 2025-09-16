@@ -24,6 +24,7 @@ export interface FoodScannerRequest {
 export interface NutritionEstimation {
     nama_makanan: string;
     foto_makanan: string;
+    confidence_score: number;
     estimasi_komposisi_makanan: {
         [key: string]: number; // Dynamic keys like "item1_(g)", "item2_(g)", etc.
     };

@@ -41,7 +41,6 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
         isScanning,
         scanResult,
         scanError,
-        confidence,
         clearResult,
         clearError } = useFoodScanner();
 
@@ -567,9 +566,9 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                             <View style={nutritionScannerStyles.scanningAnimation}>
                                 <Zap size={48} color="#10B981" />
                             </View>
-                            <Text style={nutritionScannerStyles.scanningTitle}>Analisis foto makanan...</Text>
+                            <Text style={nutritionScannerStyles.scanningTitle}>Proses Gambar</Text>
                             <Text style={nutritionScannerStyles.scanningDescription}>
-                                NutriAdvisor AI sedang memproses gambar dan menghitung fakta nutrisi
+                                NutriAdvisor AI sedang menganalisis gambar dan menghitung fakta nutrisi
                             </Text>
                             <View style={nutritionScannerStyles.progressBar}>
                                 <View style={nutritionScannerStyles.progressBarFill} />
@@ -618,9 +617,16 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                         <View style={nutritionScannerStyles.confidenceCard}>
                             <Text style={nutritionScannerStyles.confidenceLabel}>Analisis Akurasi</Text>
                             <View style={nutritionScannerStyles.confidenceBar}>
-                                <View style={[nutritionScannerStyles.confidenceBarFill, { width: `${confidence || 85}%` }]} />
+                                <View 
+                                    style={[
+                                        nutritionScannerStyles.confidenceBarFill, 
+                                        { width: `${Math.round((scanResult.confidence_score || 0.85) * 100)}%` }
+                                    ]} 
+                                />
                             </View>
-                            <Text style={nutritionScannerStyles.confidenceText}>{confidence || 85}% akurat</Text>
+                            <Text style={nutritionScannerStyles.confidenceText}>
+                                {Math.round((scanResult.confidence_score || 0.85) * 100)}% confidence
+                            </Text>
                         </View>
 
                         {/* Quick Summary */}

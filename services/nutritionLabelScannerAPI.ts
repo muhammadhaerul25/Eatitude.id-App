@@ -54,6 +54,7 @@ export interface NutritionLabelScannerRequest {
 export interface NutritionLabelEstimation {
     nama_makanan: string;
     foto_makanan: string;
+    confidence_score: number;
     estimasi_komposisi_makanan: {
         [key: string]: number;
     };
