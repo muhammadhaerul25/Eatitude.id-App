@@ -298,6 +298,26 @@ export default function IndexScreen() {
       // Also update individual meal status
       await individualMealPlanService.updateMealStatus(mealId, status === 'completed' ? 'completed' : status === 'skipped' ? 'skipped' : 'planned', selectedDate);
 
+      // Reload individual meals to refresh the UI
+      const updatedMeals = await individualMealPlanService.getIndividualMealsForDate(selectedDate);
+      setIndividualMeals(updatedMeals);
+
+      // Also reload meal cache to reflect the changes
+      const newMealCache: { [mealId: string]: any } = {};
+      const updatedDayCache = await unifiedCache.getDayCache(selectedDate);
+
+      for (const mId in updatedDayCache.meal_plan) {
+        const cachedMeal = updatedDayCache.meal_plan[mId];
+        newMealCache[mId] = {
+          actualCalories: cachedMeal.actual_calories || 0,
+          scannedItems: cachedMeal.scanned_items || [],
+          status: cachedMeal.status,
+          notes: cachedMeal.logged_at ? `Logged at ${new Date(cachedMeal.logged_at).toLocaleTimeString()}` : ''
+        };
+      }
+
+      setMealCache(newMealCache);
+
       console.log(`✅ Updated meal status: ${mealId} -> ${status}`);
     } catch (error) {
       console.error('Failed to update meal status with cache:', error);
