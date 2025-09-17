@@ -387,10 +387,12 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                                             <View style={nutritionScannerStyles.cornerBL} />
                                             <View style={nutritionScannerStyles.cornerBR} />
                                         </View>
-                                        <View style={nutritionScannerStyles.cameraPlaceholder}>
-                                            <Camera size={48} color="#6B7280" />
-                                            <Text style={nutritionScannerStyles.cameraText}>Posisikan makanan di area ini</Text>
-                                        </View>
+                                        {!imagePreview && (
+                                            <View style={nutritionScannerStyles.cameraPlaceholder}>
+                                                <Camera size={48} color="#6B7280" />
+                                                <Text style={nutritionScannerStyles.cameraText}>Posisikan makanan di area ini</Text>
+                                            </View>
+                                        )}
 
                                         {/* Image Preview Section */}
                                         {imagePreview && (
@@ -617,11 +619,11 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                         <View style={nutritionScannerStyles.confidenceCard}>
                             <Text style={nutritionScannerStyles.confidenceLabel}>Analisis Akurasi</Text>
                             <View style={nutritionScannerStyles.confidenceBar}>
-                                <View 
+                                <View
                                     style={[
-                                        nutritionScannerStyles.confidenceBarFill, 
+                                        nutritionScannerStyles.confidenceBarFill,
                                         { width: `${Math.round((scanResult.confidence_score || 0.85) * 100)}%` }
-                                    ]} 
+                                    ]}
                                 />
                             </View>
                             <Text style={nutritionScannerStyles.confidenceText}>
