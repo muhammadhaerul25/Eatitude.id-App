@@ -1,8 +1,10 @@
+import { useFocusEffect } from '@react-navigation/native';
 import {
   AlertCircle,
   AlertTriangle,
   CheckCircle,
   Droplet,
+  RefreshCw,
   Target
 } from 'lucide-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -37,8 +39,8 @@ export default function ProgressScreen() {
       const dayCache = await unifiedCache.getDayCache(selectedDate);
 
       if (!cache.personal_plan) {
-        console.warn('No personal plan found - using sample data');
-        setDailyTargets(getSampleData());
+        console.warn('No personal plan found - using default values');
+        setDailyTargets(getDefaultTargets());
         return;
       }
 
@@ -49,42 +51,81 @@ export default function ProgressScreen() {
       const targets = {
         calories: {
           current: progress.calories_eaten,
-          target: personalPlan.kebutuhan_kalori?.["total_kalori_per_hari_(kcal)"] || 2000
+          target: personalPlan.kebutuhan_kalori?.["total_kalori_per_hari_(kcal)"] || progress.calories_target || 2000
         },
         macros: {
           carbs: {
             current: progress.macros_eaten.carbs,
-            target: personalPlan.kebutuhan_makronutrisi?.["karbohidrat_per_hari_(g)"] || 250
+            target: personalPlan.kebutuhan_makronutrisi?.["karbohidrat_per_hari_(g)"] || progress.macros_target.carbs || 250
           },
           protein: {
             current: progress.macros_eaten.protein,
-            target: personalPlan.kebutuhan_makronutrisi?.["protein_per_hari_(g)"] || 150
+            target: personalPlan.kebutuhan_makronutrisi?.["protein_per_hari_(g)"] || progress.macros_target.protein || 150
           },
           fat: {
             current: progress.macros_eaten.fat,
-            target: personalPlan.kebutuhan_makronutrisi?.["lemak_per_hari_(g)"] || 67
+            target: personalPlan.kebutuhan_makronutrisi?.["lemak_per_hari_(g)"] || progress.macros_target.fat || 67
           },
           fiber: {
             current: progress.macros_eaten.fiber,
-            target: personalPlan.kebutuhan_makronutrisi?.["serat_per_hari_(g)"] || 25
+            target: personalPlan.kebutuhan_makronutrisi?.["serat_per_hari_(g)"] || progress.macros_target.fiber || 25
           },
         },
         vitamins: {
-          vitaminA: { current: 720, target: 900 }, // Will be calculated from scanned foods
-          vitaminB: { current: 2.1, target: 2.4 },
-          vitaminC: { current: 108, target: 90 },
-          vitaminD: { current: 15, target: 20 },
-          vitaminE: { current: 12, target: 15 },
-          vitaminK: { current: 145, target: 120 },
+          vitaminA: {
+            current: calculateVitaminFromMeals(dayCache, 'vitaminA'),
+            target: personalPlan.kebutuhan_mikronutrisi?.["vitamin_a_per_hari_(mg)"] || 0.9
+          },
+          vitaminB: {
+            current: calculateVitaminFromMeals(dayCache, 'vitaminB'),
+            target: personalPlan.kebutuhan_mikronutrisi?.["vitamin_b_kompleks_per_hari_(mg)"] || 2.4
+          },
+          vitaminC: {
+            current: calculateVitaminFromMeals(dayCache, 'vitaminC'),
+            target: personalPlan.kebutuhan_mikronutrisi?.["vitamin_c_per_hari_(mg)"] || 90
+          },
+          vitaminD: {
+            current: calculateVitaminFromMeals(dayCache, 'vitaminD'),
+            target: personalPlan.kebutuhan_mikronutrisi?.["vitamin_d_per_hari_(mg)"] || 0.02
+          },
+          vitaminE: {
+            current: calculateVitaminFromMeals(dayCache, 'vitaminE'),
+            target: personalPlan.kebutuhan_mikronutrisi?.["vitamin_e_per_hari_(mg)"] || 15
+          },
+          vitaminK: {
+            current: calculateVitaminFromMeals(dayCache, 'vitaminK'),
+            target: personalPlan.kebutuhan_mikronutrisi?.["vitamin_k_per_hari_(mg)"] || 0.12
+          },
         },
         minerals: {
-          calcium: { current: 1100, target: 1000 },
-          iron: { current: 16, target: 18 },
-          magnesium: { current: 280, target: 400 },
-          potassium: { current: 2100, target: 3500 },
-          sodium: { current: 2000, target: 2300 },
-          zinc: { current: 13, target: 11 },
-          iodine: { current: 135, target: 150 },
+          calcium: {
+            current: calculateMineralFromMeals(dayCache, 'calcium'),
+            target: personalPlan.kebutuhan_mikronutrisi?.["kalsium_per_hari_(mg)"] || 1000
+          },
+          iron: {
+            current: calculateMineralFromMeals(dayCache, 'iron'),
+            target: personalPlan.kebutuhan_mikronutrisi?.["zat_besi_per_hari_(mg)"] || 18
+          },
+          magnesium: {
+            current: calculateMineralFromMeals(dayCache, 'magnesium'),
+            target: personalPlan.kebutuhan_mikronutrisi?.["magnesium_per_hari_(mg)"] || 400
+          },
+          potassium: {
+            current: calculateMineralFromMeals(dayCache, 'potassium'),
+            target: personalPlan.kebutuhan_mikronutrisi?.["kalium_per_hari_(mg)"] || 3500
+          },
+          sodium: {
+            current: calculateMineralFromMeals(dayCache, 'sodium'),
+            target: personalPlan.kebutuhan_mikronutrisi?.["natrium_per_hari_(mg)"] || 2300
+          },
+          zinc: {
+            current: calculateMineralFromMeals(dayCache, 'zinc'),
+            target: personalPlan.kebutuhan_mikronutrisi?.["zinc_per_hari_(mg)"] || 11
+          },
+          iodine: {
+            current: calculateMineralFromMeals(dayCache, 'iodine'),
+            target: personalPlan.kebutuhan_mikronutrisi?.["yodium_per_hari_(mg)"] || 0.15
+          },
         },
         limits: {
           sugar: {
@@ -95,20 +136,26 @@ export default function ProgressScreen() {
             current: calculateSaltFromScannedFoods(dayCache.scanned_foods),
             target: personalPlan.batasi_konsumsi?.["garam_per_hari_(g)"] || 5
           },
-          saturatedFat: { current: 25, target: 20 },
-          transFat: { current: 3, target: 2 },
+          saturatedFat: {
+            current: calculateSaturatedFatFromMeals(dayCache),
+            target: personalPlan.batasi_konsumsi?.["lemak_jenuh_per_hari_(g)"] || 20
+          },
+          transFat: {
+            current: calculateTransFatFromMeals(dayCache),
+            target: personalPlan.batasi_konsumsi?.["lemak_trans_per_hari_(g)"] || 2
+          },
           caffeine: {
-            current: 320,
+            current: calculateCaffeineFromMeals(dayCache),
             target: personalPlan.batasi_konsumsi?.["kafein_per_hari_(mg)"] || 400
           },
           cholesterol: {
-            current: 180,
+            current: calculateCholesterolFromMeals(dayCache),
             target: personalPlan.batasi_konsumsi?.["kolesterol_per_hari_(mg)"] || 300
           },
         },
         hydration: {
           current: Math.floor(progress.water_intake_ml / 250), // Convert ml to glasses 
-          target: personalPlan.kebutuhan_cairan?.["air_per_hari_(gelas)"] || 10
+          target: personalPlan.kebutuhan_cairan?.["air_per_hari_(gelas)"] || Math.floor(progress.water_target_ml / 250) || 10
         }
       };
 
@@ -116,7 +163,7 @@ export default function ProgressScreen() {
 
     } catch (error) {
       console.error('Error loading progress data:', error);
-      setDailyTargets(getSampleData());
+      setDailyTargets(getDefaultTargets());
     } finally {
       setIsLoading(false);
     }
@@ -132,47 +179,109 @@ export default function ProgressScreen() {
     return scannedFoods.reduce((total, food) => total + ((food.nutrition?.sodium || 0) / 1000), 0); // Convert mg to g
   };
 
-  // Fallback sample data
-  const getSampleData = () => ({
-    calories: { current: 1650, target: 2000 },
+  // Calculate vitamins from completed meals and scanned foods
+  const calculateVitaminFromMeals = (dayCache: any, vitaminType: string) => {
+    // This is a simplified calculation - in a real app, you'd have a nutrition database
+    // For now, we'll estimate based on calories consumed
+    const totalCalories = dayCache.progress.calories_eaten;
+    const estimates = {
+      vitaminA: totalCalories * 0.0004, // Rough estimate per calorie
+      vitaminB: totalCalories * 0.001,
+      vitaminC: totalCalories * 0.05,
+      vitaminD: totalCalories * 0.00001,
+      vitaminE: totalCalories * 0.007,
+      vitaminK: totalCalories * 0.00007,
+    };
+    return estimates[vitaminType as keyof typeof estimates] || 0;
+  };
+
+  // Calculate minerals from completed meals and scanned foods
+  const calculateMineralFromMeals = (dayCache: any, mineralType: string) => {
+    const totalCalories = dayCache.progress.calories_eaten;
+    const estimates = {
+      calcium: totalCalories * 0.5, // Rough estimate per calorie
+      iron: totalCalories * 0.008,
+      magnesium: totalCalories * 0.14,
+      potassium: totalCalories * 1.05,
+      sodium: totalCalories * 1.0,
+      zinc: totalCalories * 0.0065,
+      iodine: totalCalories * 0.000075,
+    };
+    return estimates[mineralType as keyof typeof estimates] || 0;
+  };
+
+  // Calculate saturated fat from meals
+  const calculateSaturatedFatFromMeals = (dayCache: any) => {
+    const totalFat = dayCache.progress.macros_eaten.fat;
+    return totalFat * 0.35; // Estimate 35% of total fat as saturated
+  };
+
+  // Calculate trans fat from meals
+  const calculateTransFatFromMeals = (dayCache: any) => {
+    const totalFat = dayCache.progress.macros_eaten.fat;
+    return totalFat * 0.02; // Estimate 2% of total fat as trans fat
+  };
+
+  // Calculate caffeine from meals
+  const calculateCaffeineFromMeals = (dayCache: any) => {
+    // Simple estimation - could be enhanced with meal-specific data
+    return dayCache.progress.calories_eaten * 0.15; // Rough estimate
+  };
+
+  // Calculate cholesterol from meals
+  const calculateCholesterolFromMeals = (dayCache: any) => {
+    const totalProtein = dayCache.progress.macros_eaten.protein;
+    return totalProtein * 1.2; // Rough estimate based on protein intake
+  };
+
+  // Default targets when no personal plan is available
+  const getDefaultTargets = () => ({
+    calories: { current: 0, target: 2000 },
     macros: {
-      carbs: { current: 180, target: 250 },
-      protein: { current: 120, target: 150 },
-      fat: { current: 45, target: 67 },
-      fiber: { current: 18, target: 25 },
+      carbs: { current: 0, target: 250 },
+      protein: { current: 0, target: 150 },
+      fat: { current: 0, target: 67 },
+      fiber: { current: 0, target: 25 },
     },
     vitamins: {
-      vitaminA: { current: 720, target: 900 },
-      vitaminB: { current: 2.1, target: 2.4 },
-      vitaminC: { current: 108, target: 90 },
-      vitaminD: { current: 15, target: 20 },
-      vitaminE: { current: 12, target: 15 },
-      vitaminK: { current: 145, target: 120 },
+      vitaminA: { current: 0, target: 900 },
+      vitaminB: { current: 0, target: 2.4 },
+      vitaminC: { current: 0, target: 90 },
+      vitaminD: { current: 0, target: 20 },
+      vitaminE: { current: 0, target: 15 },
+      vitaminK: { current: 0, target: 120 },
     },
     minerals: {
-      calcium: { current: 1100, target: 1000 },
-      iron: { current: 16, target: 18 },
-      magnesium: { current: 280, target: 400 },
-      potassium: { current: 2100, target: 3500 },
-      sodium: { current: 2000, target: 2300 },
-      zinc: { current: 13, target: 11 },
-      iodine: { current: 135, target: 150 },
+      calcium: { current: 0, target: 1000 },
+      iron: { current: 0, target: 18 },
+      magnesium: { current: 0, target: 400 },
+      potassium: { current: 0, target: 3500 },
+      sodium: { current: 0, target: 2300 },
+      zinc: { current: 0, target: 11 },
+      iodine: { current: 0, target: 150 },
     },
     limits: {
-      sugar: { current: 35, target: 50 },
-      salt: { current: 2.8, target: 5 },
-      saturatedFat: { current: 25, target: 20 },
-      transFat: { current: 3, target: 2 },
-      caffeine: { current: 320, target: 400 },
-      cholesterol: { current: 180, target: 300 },
+      sugar: { current: 0, target: 50 },
+      salt: { current: 0, target: 5 },
+      saturatedFat: { current: 0, target: 20 },
+      transFat: { current: 0, target: 2 },
+      caffeine: { current: 0, target: 400 },
+      cholesterol: { current: 0, target: 300 },
     },
-    hydration: { current: 6, target: 10 }
+    hydration: { current: 0, target: 10 }
   });
 
   // Load data on mount and when date changes
   useEffect(() => {
     loadProgressData();
   }, [loadProgressData]);
+
+  // Refresh data when screen is focused (e.g., returning from index tab)
+  useFocusEffect(
+    useCallback(() => {
+      loadProgressData();
+    }, [loadProgressData])
+  );
 
   // If still loading or no data, show loading or sample data
   if (isLoading || !dailyTargets) {
@@ -235,23 +344,30 @@ export default function ProgressScreen() {
             <TouchableOpacity onPress={() => changeDate(1)} style={{ padding: 5 }}>
               <Text style={{ fontSize: 18, color: '#10B981' }}>›</Text>
             </TouchableOpacity>
+            <TouchableOpacity onPress={loadProgressData} style={{ padding: 5, marginLeft: 10 }}>
+              <RefreshCw size={18} color="#10B981" />
+            </TouchableOpacity>
           </View>
         </View>
         <View style={progressTabStyles.periodSelector}>
-          {['Hari', 'Minggu', 'Bulan'].map((period) => (
+          {[
+            { key: 'day', label: 'Hari' },
+            { key: 'week', label: 'Minggu' },
+            { key: 'month', label: 'Bulan' }
+          ].map((period) => (
             <TouchableOpacity
-              key={period}
+              key={period.key}
               style={[
                 progressTabStyles.periodButton,
-                selectedPeriod === period && progressTabStyles.periodButtonActive
+                selectedPeriod === period.key && progressTabStyles.periodButtonActive
               ]}
-              onPress={() => setSelectedPeriod(period as any)}
+              onPress={() => setSelectedPeriod(period.key as any)}
             >
               <Text style={[
                 progressTabStyles.periodButtonText,
-                selectedPeriod === period && progressTabStyles.periodButtonTextActive
+                selectedPeriod === period.key && progressTabStyles.periodButtonTextActive
               ]}>
-                {period.charAt(0).toUpperCase() + period.slice(1)}
+                {period.label}
               </Text>
             </TouchableOpacity>
           ))}

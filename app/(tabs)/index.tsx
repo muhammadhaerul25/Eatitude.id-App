@@ -5,7 +5,8 @@ import {
   Clock,
   Edit,
   Plus,
-  Scan
+  Scan,
+  ShoppingCart
 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -22,6 +23,7 @@ import {
 import { LoadingOverlay } from '../../components/common/LoadingOverlay';
 import { AddMealModal } from '../../components/nutrition';
 import NutritionScanner from '../../components/nutrition/NutritionScanner';
+import { OrderPage } from '../../components/order';
 import { demoDataService } from '../../services/demoDataService';
 import { IndividualMealItem, individualMealPlanService } from '../../services/individualMealPlanAPI';
 import { unifiedCache } from '../../services/unifiedCacheService';
@@ -47,9 +49,11 @@ export default function IndexScreen() {
   const [selectedMeal, setSelectedMeal] = useState<any>(null);
   const [showNutritionScanner, setShowNutritionScanner] = useState(false);
   const [showAddMealModal, setShowAddMealModal] = useState(false);
+  const [showOrderPage, setShowOrderPage] = useState(false);
+  const [selectedOrderItem, setSelectedOrderItem] = useState<any>(null);
   const [isAppInitialized, setIsAppInitialized] = useState(false);
   const [initializationError, setInitializationError] = useState<string | null>(null);
-  const [dailyCalorieTarget, setDailyCalorieTarget] = useState<number>(2000);
+  const [personalPlan, setPersonalPlan] = useState<any>(null);
   const [mealCache, setMealCache] = useState<{ [mealId: string]: any }>({});
   const [selectedFoodChoice, setSelectedFoodChoice] = useState<{ [mealId: string]: any }>({});
   const [individualMeals, setIndividualMeals] = useState<IndividualMealItem[]>([]);
@@ -77,15 +81,25 @@ export default function IndexScreen() {
     initializeApp();
   }, []);
 
-  // Load daily calorie target from individual meals
+  // Load personal plan for calorie target
   useEffect(() => {
-    const calculateDailyTarget = () => {
-      const totalCalories = individualMeals.reduce((total, meal) => total + meal.targetCalories, 0);
-      setDailyCalorieTarget(totalCalories || 2000);
+    const loadPersonalPlan = async () => {
+      try {
+        await unifiedCache.initializeCache();
+        const cache = await unifiedCache.getCache();
+        if (cache.personal_plan) {
+          setPersonalPlan(cache.personal_plan);
+          // Get daily calorie target from personal plan
+          const dailyTarget = cache.personal_plan.kebutuhan_kalori?.["total_kalori_per_hari_(kcal)"] || 2000;
+          console.log('📊 Daily calorie target from personal plan:', dailyTarget);
+        }
+      } catch (error) {
+        console.error('Failed to load personal plan:', error);
+      }
     };
 
-    calculateDailyTarget();
-  }, [individualMeals]);
+    loadPersonalPlan();
+  }, []);
 
   // Load individual meals when selected date changes
   useEffect(() => {
@@ -223,11 +237,6 @@ export default function IndexScreen() {
     }
   };
 
-  // Helper function to check if meal is from individual meal service
-  const isIndividualMeal = (mealId: string) => {
-    return individualMeals.some(meal => meal.id === mealId);
-  };
-
   // Helper function to get individual meal data
   const getIndividualMealData = (mealId: string) => {
     return individualMeals.find(meal => meal.id === mealId);
@@ -263,15 +272,27 @@ export default function IndexScreen() {
       const dayCache = await unifiedCache.getDayCache(selectedDate);
 
       if (dayCache.meal_plan[mealId]) {
-        dayCache.meal_plan[mealId].status = status === 'completed' ? 'eaten' : status === 'skipped' ? 'skipped' : 'planned';
-        dayCache.meal_plan[mealId].logged_at = new Date().toISOString();
-
-        // If completed and we have a selected food choice, log calories
         if (status === 'completed' && selectedFoodChoice[mealId]) {
-          dayCache.meal_plan[mealId].actual_calories = selectedFoodChoice[mealId].calories;
-        }
+          // Use logMeal to properly update progress data
+          const selectedFood = selectedFoodChoice[mealId];
+          const actualCalories = selectedFood.calories || 0;
 
-        await unifiedCache.updateMealPlan(selectedDate, dayCache.meal_plan);
+          // Create basic nutrition data from selected food
+          const actualNutrition = {
+            protein: Math.round(actualCalories * 0.15 / 4), // Estimate 15% protein
+            carbs: Math.round(actualCalories * 0.55 / 4),   // Estimate 55% carbs
+            fat: Math.round(actualCalories * 0.30 / 9),     // Estimate 30% fat
+            fiber: Math.round(actualCalories * 0.01)        // Estimate 1% fiber
+          };
+
+          await unifiedCache.logMeal(selectedDate, mealId, actualCalories, actualNutrition);
+          console.log(`✅ Logged meal with ${actualCalories} calories and nutrition data`);
+        } else {
+          // For skipped or other status, just update the meal plan
+          dayCache.meal_plan[mealId].status = status === 'completed' ? 'eaten' : status === 'skipped' ? 'skipped' : 'planned';
+          dayCache.meal_plan[mealId].logged_at = new Date().toISOString();
+          await unifiedCache.updateMealPlan(selectedDate, dayCache.meal_plan);
+        }
       }
 
       // Also update individual meal status
@@ -357,10 +378,16 @@ export default function IndexScreen() {
     }
   };
 
+  const handleOrderFood = (foodItem: any) => {
+    setSelectedOrderItem(foodItem);
+    setShowOrderPage(true);
+  };
+
   const isToday = selectedDate.toDateString() === new Date().toDateString();
 
-  // Calculate calories from individual meals
-  const totalCalories = individualMeals.reduce((total, meal) => total + (meal.targetCalories || 0), 0);
+  // Calculate calories - prioritize personal plan, fallback to individual meals
+  const totalCalories = personalPlan?.kebutuhan_kalori?.["total_kalori_per_hari_(kcal)"] ||
+    individualMeals.reduce((total, meal) => total + (meal.targetCalories || 0), 0) || 2000;
   const completedCalories = individualMeals
     .filter(meal => meal.status === 'completed')
     .reduce((total, meal) => total + (meal.selectedOption?.calories || meal.targetCalories || 0), 0);
@@ -423,7 +450,7 @@ export default function IndexScreen() {
         <Bell size={16} color="#F59E0B" />
         <Text style={indexTabStyles.reminderText}>
           {isToday
-            ? `Target Kalori: ${completedCalories || 0}/${dailyCalorieTarget > 0 ? dailyCalorieTarget : totalCalories || 2000} kcal • Jangan lupa minum air!`
+            ? `Target Kalori: ${completedCalories || 0}/${totalCalories} kcal • Jangan lupa minum air!`
             : 'Lihat rencana makan Anda untuk tanggal ini • Jangan lupa minum air!'
           }
         </Text>
@@ -619,19 +646,20 @@ export default function IndexScreen() {
               <View style={indexTabStyles.foodChoicesList}>
                 {(() => {
                   const individualMealData = getIndividualMealData(selectedMeal?.id);
-                  const isFromIndividualService = isIndividualMeal(selectedMeal?.id);
 
-                  if (isFromIndividualService && individualMealData) {
-                    // Show individual meal options with price
-                    return individualMealData.menuOptions.map((option, index) => {
-                      const isSelected = selectedFoodChoice[selectedMeal?.id]?.name === option.name;
-                      return (
+                  // Show individual meal options with price
+                  return individualMealData?.menuOptions.map((option, index) => {
+                    const isSelected = selectedFoodChoice[selectedMeal?.id]?.name === option.name;
+                    return (
+                      <View
+                        key={index}
+                        style={[
+                          indexTabStyles.foodChoiceItem,
+                          isSelected && { backgroundColor: '#E0F2FE', borderColor: '#0284C7', borderWidth: 2 }
+                        ]}
+                      >
                         <TouchableOpacity
-                          key={index}
-                          style={[
-                            indexTabStyles.foodChoiceItem,
-                            isSelected && { backgroundColor: '#E0F2FE', borderColor: '#0284C7', borderWidth: 2 }
-                          ]}
+                          style={{ flex: 1 }}
                           onPress={async () => {
                             const foodChoice = {
                               name: option.name,
@@ -671,59 +699,54 @@ export default function IndexScreen() {
                               ]}>
                                 {option.calories} kcal
                               </Text>
-                              <Text style={{
-                                fontSize: 14,
-                                fontWeight: '600',
-                                color: isSelected ? '#0284C7' : '#059669'
+
+                              <View style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
                               }}>
-                                Rp {option.price.toLocaleString()}
-                              </Text>
+                                <Text style={{
+                                  fontSize: 14,
+                                  fontWeight: '600',
+                                  color: isSelected ? '#0284C7' : '#059669'
+                                }}>
+                                  Rp {option.price.toLocaleString()}
+                                </Text>
+
+                                {/* Order Button */}
+                                <TouchableOpacity
+                                  style={{
+                                    marginLeft: 8,
+                                    paddingHorizontal: 12,
+                                    paddingVertical: 6,
+                                    backgroundColor: '#059669',
+                                    borderRadius: 6,
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    minWidth: 70
+                                  }}
+                                  onPress={() => handleOrderFood(option)}
+                                >
+                                  <ShoppingCart size={14} color="#FFFFFF" />
+                                  <Text style={{
+                                    fontSize: 12,
+                                    fontWeight: '600',
+                                    color: '#FFFFFF',
+                                    marginLeft: 4
+                                  }}>
+                                    Order
+                                  </Text>
+                                </TouchableOpacity>
+                              </View>
                             </View>
                           </View>
                         </TouchableOpacity>
-                      );
-                    });
-                  } else {
-                    // Legacy meal options without price
-                    return (selectedMeal?.details?.pilihan_menu && selectedMeal.details.pilihan_menu.length > 0) ? (
-                      selectedMeal.details.pilihan_menu.map((menuItem: string, index: number) => {
-                        const foodChoice = { name: menuItem, calories: Math.round(selectedMeal?.targetKalori / (selectedMeal?.details?.pilihan_menu?.length || 1) || 0) };
-                        const isSelected = selectedFoodChoice[selectedMeal?.id]?.name === foodChoice.name;
-                        return (
-                          <TouchableOpacity
-                            key={index}
-                            style={[
-                              indexTabStyles.foodChoiceItem,
-                              isSelected && { backgroundColor: '#E0F2FE', borderColor: '#0284C7', borderWidth: 2 }
-                            ]}
-                            onPress={() => saveMealChoice(selectedMeal?.id, foodChoice)}
-                          >
-                            <Text style={[
-                              indexTabStyles.foodChoiceText,
-                              isSelected && { color: '#0284C7', fontWeight: '600' }
-                            ]}>
-                              {foodChoice.name} {isSelected && '✓'}
-                            </Text>
-                            <Text style={[
-                              indexTabStyles.foodChoiceCalories,
-                              isSelected && { color: '#0284C7', fontWeight: '600' }
-                            ]}>
-                              {foodChoice.calories} kcal
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })
-                    ) : (
-                      <View style={indexTabStyles.foodChoiceItem}>
-                        <Text style={indexTabStyles.foodChoiceText}>
-                          {selectedMeal?.rekomendasi_menu || 'No food options available'}
-                        </Text>
-                        <Text style={indexTabStyles.foodChoiceCalories}>
-                          {selectedMeal?.targetKalori || 0} kcal
-                        </Text>
+
+
                       </View>
                     );
-                  }
+                  });
+
                 })()}
               </View>
 
@@ -905,6 +928,13 @@ export default function IndexScreen() {
           ? 'AI sedang membuat rekomendasi menu berdasarkan preferensi Anda...'
           : undefined
         }
+      />
+
+      {/* Order Page Modal */}
+      <OrderPage
+        visible={showOrderPage}
+        onClose={() => setShowOrderPage(false)}
+        foodItem={selectedOrderItem}
       />
     </SafeAreaView>
   );
