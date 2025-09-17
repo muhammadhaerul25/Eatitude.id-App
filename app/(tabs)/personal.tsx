@@ -1,5 +1,7 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
 import { Edit3 } from 'lucide-react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -7,7 +9,6 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { router } from 'expo-router';
 
 import { NutritionSections } from '../../components/personal/NutritionSections';
 import { ProfileSection } from '../../components/personal/ProfileSection';
@@ -27,6 +28,40 @@ export default function PersonalScreen() {
     getBMICategory,
     getSleepDuration,
   } = usePersonalLogic();
+
+  const [isFirstTimeVisit, setIsFirstTimeVisit] = useState(false);
+
+  useEffect(() => {
+    const checkFirstTimeVisit = async () => {
+      try {
+        const hasSeenPersonal = await AsyncStorage.getItem('hasSeenPersonal');
+        const hasCompletedOnboarding = await AsyncStorage.getItem('hasCompletedOnboarding');
+
+        // If user completed onboarding but hasn't seen personal tab yet
+        if (hasCompletedOnboarding === 'true' && hasSeenPersonal !== 'true') {
+          setIsFirstTimeVisit(true);
+        }
+      } catch (error) {
+        console.error('Error checking first time visit:', error);
+      }
+    };
+
+    checkFirstTimeVisit();
+  }, []);
+
+  const handleContinueToApp = async () => {
+    try {
+      // Mark that user has seen personal tab
+      await AsyncStorage.setItem('hasSeenPersonal', 'true');
+      console.log('✅ Personal tab completed, navigating to main app');
+
+      // Navigate to main tabs (index)
+      router.replace('/(tabs)');
+    } catch (error) {
+      console.error('Error completing personal setup:', error);
+      router.replace('/(tabs)');
+    }
+  };
 
   if (!profile) {
     return (
@@ -85,26 +120,6 @@ export default function PersonalScreen() {
 
         {/* Nutrition Sections */}
         <NutritionSections nutritionPlan={nutritionPlan} />
-
-        {/* Action Buttons */}
-        {/* <View style={personalStyles.actionContainer}>
-          <TouchableOpacity
-            style={[personalStyles.actionButton, { backgroundColor: '#10B981' }]}
-            onPress={generateNutritionPlan}
-            disabled={isGeneratingPlan}
-          >
-            <Text style={personalStyles.actionButtonText}>
-              {isGeneratingPlan ? 'Menghasilkan Rencana...' : 'Generate Rencana Nutrisi AI'}
-            </Text>
-          </TouchableOpacity>
-
-            <TouchableOpacity 
-            style={personalStyles.actionButton}
-            onPress={() => router.push('/(tabs)/progress')}
-            >
-            <Text style={personalStyles.actionButtonText}>Lihat Progress</Text>
-            </TouchableOpacity>
-        </View> */}
 
         <View style={personalStyles.bottomSpacing} />
       </ScrollView>

@@ -13,17 +13,20 @@ export default function RootLayout() {
       try {
         console.log('🔍 Checking app initialization state...');
 
-        const [welcomeStatus, onboardingStatus] = await Promise.all([
+        const [welcomeStatus, onboardingStatus, personalStatus] = await Promise.all([
           AsyncStorage.getItem('hasSeenWelcome'),
-          AsyncStorage.getItem('hasCompletedOnboarding')
+          AsyncStorage.getItem('hasCompletedOnboarding'),
+          AsyncStorage.getItem('hasSeenPersonal')
         ]);
 
         const seenWelcome = welcomeStatus === 'true';
         const completedOnboarding = onboardingStatus === 'true';
+        const seenPersonal = personalStatus === 'true';
 
         console.log('📊 App state:', {
           hasSeenWelcome: seenWelcome,
           hasCompletedOnboarding: completedOnboarding,
+          hasSeenPersonal: seenPersonal,
           currentSegments: segments
         });
 
@@ -33,11 +36,17 @@ export default function RootLayout() {
         setTimeout(() => {
           const inAuthGroup = segments[0] === '(tabs)';
 
-          if (completedOnboarding) {
-            // User has completed onboarding, should be in tabs
+          if (completedOnboarding && seenPersonal) {
+            // User has completed everything, should be in tabs
             if (!inAuthGroup) {
               console.log('🚀 Redirecting to tabs (main app)');
               router.replace('/(tabs)');
+            }
+          } else if (completedOnboarding && !seenPersonal) {
+            // User completed onboarding but hasn't seen personal tab
+            if (segments[0] !== '(tabs)' || segments[1] !== 'personal') {
+              console.log('🚀 Redirecting to personal tab for first-time setup');
+              router.replace('/(tabs)/personal');
             }
           } else if (seenWelcome) {
             // User has seen welcome but not completed onboarding

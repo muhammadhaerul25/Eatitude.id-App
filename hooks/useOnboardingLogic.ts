@@ -116,8 +116,9 @@ export const useOnboardingLogic = () => {
                 await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
                 await AsyncStorage.setItem('hasSeenWelcome', 'true');
 
-                // Navigate to main app (tabs)
-                router.replace('/(tabs)');
+                // Navigate to personal tab first (not main tabs)
+                console.log('🚀 Navigating to personal tab for first-time setup');
+                router.replace('/(tabs)/personal');
             } else {
                 throw new Error(result.error || 'Failed to complete onboarding');
             }
@@ -141,8 +142,8 @@ export const useOnboardingLogic = () => {
                 errorMessage,
                 [
                     {
-                        text: 'Lanjutkan ke Aplikasi',
-                        onPress: () => router.replace('/(tabs)'),
+                        text: 'Lanjutkan ke Personal',
+                        onPress: () => router.replace('/(tabs)/personal'),
                         style: 'default'
                     }
                 ]

@@ -1,9 +1,10 @@
-import { TriangleAlert as AlertTriangle, Bell, Bot, Send, TrendingUp, User } from 'lucide-react-native';
+import { TriangleAlert as AlertTriangle, Bell, Bot, MessageCircle, Phone, Send, Star, TrendingUp, User } from 'lucide-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -25,6 +26,17 @@ interface Message {
   generatedBy?: 'ai' | 'nutritionist';
   nutritionistName?: string;
   isRealAI?: boolean; // Flag to distinguish real AI responses
+}
+
+interface Nutritionist {
+  id: string;
+  name: string;
+  specialization: string;
+  experience: string;
+  rating: number;
+  available: boolean;
+  price: string;
+  imageUrl?: string;
 }
 
 interface Insight {
@@ -63,7 +75,39 @@ export default function ConsultScreen() {
   const [todaysAnalysis, setTodaysAnalysis] = useState<NutritionAnalysis | null>(null);
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [isChatModalVisible, setIsChatModalVisible] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+
+  // Sample nutritionist data
+  const nutritionists: Nutritionist[] = [
+    {
+      id: '1',
+      name: 'Dr. Sarah Ahli Gizi',
+      specialization: 'Berat Badan & Diabetes',
+      experience: '8 tahun',
+      rating: 4.8,
+      available: true,
+      price: 'Rp 150,000/sesi'
+    },
+    {
+      id: '2',
+      name: 'Ahli Gizi Budi',
+      specialization: 'Gizi Olahraga',
+      experience: '5 tahun',
+      rating: 4.6,
+      available: true,
+      price: 'Rp 120,000/sesi'
+    },
+    {
+      id: '3',
+      name: 'Dr. Maya Ahli Gizi',
+      specialization: 'Gizi Anak & Keluarga',
+      experience: '10 tahun',
+      rating: 4.9,
+      available: false,
+      price: 'Rp 180,000/sesi'
+    }
+  ];
 
   // Get user data and nutrition plans
   const { profile, nutritionPlan } = usePersonalLogic();
@@ -574,11 +618,232 @@ export default function ConsultScreen() {
             )}
           </View>
 
-          {/* Chat Messages */}
+          {/* Nutritionist List */}
           <View style={consultationTabStyles.section}>
-            <Text style={consultationTabStyles.sectionTitle}>Ahli Gizi</Text>
+            <Text style={consultationTabStyles.sectionTitle}>Daftar Ahli Gizi</Text>
 
-            <View style={consultationTabStyles.chatContainer}>
+            <View style={{ marginTop: 12 }}>
+              {nutritionists.map((nutritionist) => (
+                <TouchableOpacity
+                  key={nutritionist.id}
+                  style={[
+                    {
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: 12,
+                      padding: 16,
+                      marginBottom: 12,
+                      borderWidth: 1,
+                      borderColor: '#E5E7EB',
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 4,
+                      elevation: 3,
+                    },
+                    !nutritionist.available && { opacity: 0.6 }
+                  ]}
+                  disabled={!nutritionist.available}
+                  onPress={() => {
+                    Alert.alert(
+                      'Konsultasi dengan Ahli Gizi',
+                      `Anda akan berkonsultasi dengan ${nutritionist.name}. Lanjutkan?`,
+                      [
+                        { text: 'Batal', style: 'cancel' },
+                        {
+                          text: 'Lanjutkan', onPress: () => {
+                            // Handle nutritionist selection
+                            console.log('Selected nutritionist:', nutritionist.name);
+                          }
+                        }
+                      ]
+                    );
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                    <View style={{
+                      width: 50,
+                      height: 50,
+                      borderRadius: 25,
+                      backgroundColor: '#10B981',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 12,
+                    }}>
+                      <User size={24} color="#FFFFFF" />
+                    </View>
+
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 16,
+                        fontWeight: 'bold',
+                        color: '#1F2937',
+                        marginBottom: 4,
+                      }}>{nutritionist.name}</Text>
+
+                      <Text style={{
+                        fontSize: 14,
+                        color: '#6B7280',
+                        marginBottom: 8,
+                      }}>
+                        {nutritionist.specialization}
+                      </Text>
+
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                        <Text style={{
+                          fontSize: 12,
+                          color: '#9CA3AF',
+                          marginRight: 12,
+                        }}>
+                          {nutritionist.experience} pengalaman
+                        </Text>
+
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Star size={12} color="#F59E0B" fill="#F59E0B" />
+                          <Text style={{
+                            fontSize: 12,
+                            color: '#F59E0B',
+                            marginLeft: 4,
+                          }}>{nutritionist.rating}</Text>
+                        </View>
+                      </View>
+                    </View>
+
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={{
+                        fontSize: 14,
+                        fontWeight: 'bold',
+                        color: '#1F2937',
+                        marginBottom: 8,
+                      }}>{nutritionist.price}</Text>
+
+                      <View style={[
+                        {
+                          paddingHorizontal: 8,
+                          paddingVertical: 4,
+                          borderRadius: 12,
+                        },
+                        nutritionist.available
+                          ? { backgroundColor: '#D1FAE5' }
+                          : { backgroundColor: '#FEE2E2' }
+                      ]}>
+                        <Text style={[
+                          { fontSize: 10, fontWeight: 'bold' },
+                          nutritionist.available
+                            ? { color: '#065F46' }
+                            : { color: '#991B1B' }
+                        ]}>
+                          {nutritionist.available ? 'Tersedia' : 'Sibuk'}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  <View style={{ marginTop: 12 }}>
+                    <TouchableOpacity
+                      style={[
+                        {
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: '#10B981',
+                          borderRadius: 8,
+                          padding: 12,
+                        },
+                        !nutritionist.available && { backgroundColor: '#9CA3AF' }
+                      ]}
+                      disabled={!nutritionist.available}
+                    >
+                      <Phone size={16} color="#FFFFFF" />
+                      <Text style={{
+                        color: '#FFFFFF',
+                        fontWeight: 'bold',
+                        marginLeft: 8,
+                      }}>
+                        {nutritionist.available ? 'Konsultasi Sekarang' : 'Tidak Tersedia'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      {/* Floating Chat Button */}
+      <TouchableOpacity
+        style={{
+          position: 'absolute',
+          bottom: 20,
+          right: 20,
+          width: 60,
+          height: 60,
+          backgroundColor: '#10B981',
+          borderRadius: 30,
+          alignItems: 'center',
+          justifyContent: 'center',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 8,
+        }}
+        onPress={() => setIsChatModalVisible(true)}
+      >
+        <MessageCircle size={28} color="#FFFFFF" />
+      </TouchableOpacity>
+
+      {/* Chat Modal */}
+      <Modal
+        visible={isChatModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setIsChatModalVisible(false)}
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
+          {/* Modal Header */}
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            backgroundColor: '#FFFFFF',
+            borderBottomWidth: 1,
+            borderBottomColor: '#E5E7EB',
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+              <Bot size={24} color="#10B981" />
+              <Text style={{
+                fontSize: 18,
+                fontWeight: 'bold',
+                color: '#1F2937',
+                marginLeft: 8,
+              }}>AI Nutrition Assistant</Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => setIsChatModalVisible(false)}
+              style={{
+                padding: 8,
+                backgroundColor: '#F3F4F6',
+                borderRadius: 20,
+              }}
+            >
+              <Text style={{ fontSize: 16, color: '#6B7280' }}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          >
+            {/* Chat Messages */}
+            <ScrollView
+              ref={scrollViewRef}
+              style={{ flex: 1, padding: 16 }}
+              showsVerticalScrollIndicator={false}
+            >
               {messages.map((message) => (
                 <View
                   key={message.id}
@@ -641,62 +906,37 @@ export default function ConsultScreen() {
                   </View>
                 </View>
               )}
-            </View>
+            </ScrollView>
 
-            {/* Quick Analysis Button */}
-            {/* {!isGeneratingAdvice && (
+            {/* Chat Input */}
+            <View style={consultationTabStyles.inputContainer}>
+              <TextInput
+                style={consultationTabStyles.textInput}
+                value={inputText}
+                onChangeText={setInputText}
+                placeholder="Ask about nutrition..."
+                multiline
+                maxLength={500}
+                editable={!isGeneratingAdvice}
+              />
               <TouchableOpacity
-                style={{
-                  backgroundColor: '#10B981',
-                  borderRadius: 8,
-                  padding: 12,
-                  marginTop: 12,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                onPress={getQuickAnalysis}
+                style={[
+                  consultationTabStyles.sendButton,
+                  (inputText.trim() === '' || isGeneratingAdvice) && { opacity: 0.5 }
+                ]}
+                onPress={sendMessage}
+                disabled={inputText.trim() === '' || isGeneratingAdvice}
               >
-                <Bot size={20} color="#FFFFFF" />
-                <Text style={{
-                  color: '#FFFFFF',
-                  fontWeight: 'bold',
-                  marginLeft: 8,
-                }}>
-                  Get AI Nutrition Analysis
-                </Text>
+                {isGeneratingAdvice ? (
+                  <ActivityIndicator size={20} color="#FFFFFF" />
+                ) : (
+                  <Send size={20} color="#FFFFFF" />
+                )}
               </TouchableOpacity>
-            )} */}
-          </View>
-        </ScrollView>
-
-        {/* Chat Input */}
-        <View style={consultationTabStyles.inputContainer}>
-          <TextInput
-            style={consultationTabStyles.textInput}
-            value={inputText}
-            onChangeText={setInputText}
-            placeholder=""
-            multiline
-            maxLength={500}
-            editable={!isGeneratingAdvice}
-          />
-          <TouchableOpacity
-            style={[
-              consultationTabStyles.sendButton,
-              (inputText.trim() === '' || isGeneratingAdvice) && { opacity: 0.5 }
-            ]}
-            onPress={sendMessage}
-            disabled={inputText.trim() === '' || isGeneratingAdvice}
-          >
-            {isGeneratingAdvice ? (
-              <ActivityIndicator size={20} color="#FFFFFF" />
-            ) : (
-              <Send size={20} color="#FFFFFF" />
-            )}
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+            </View>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
