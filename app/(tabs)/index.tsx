@@ -5,9 +5,7 @@ import {
   Clock,
   Edit,
   Plus,
-  RefreshCw,
-  Scan,
-  Utensils
+  Scan
 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -22,36 +20,12 @@ import {
 } from 'react-native';
 // Import the enhanced meal planner hook for automatic daily meal generation
 import { LoadingOverlay } from '../../components/common/LoadingOverlay';
+import { AddMealModal } from '../../components/nutrition';
 import NutritionScanner from '../../components/nutrition/NutritionScanner';
-import { useEnhancedMealPlanner } from '../../hooks/tabs/useEnhancedMealPlanner';
+import { demoDataService } from '../../services/demoDataService';
+import { IndividualMealItem, individualMealPlanService } from '../../services/individualMealPlanAPI';
 import { unifiedCache } from '../../services/unifiedCacheService';
 import { indexTabStyles } from '../../styles/tabs/indexStyles';
-// Import app initialization service
-import { useRouter } from 'expo-router';
-import { appInitService } from '../../services/appInitializationService';
-import { demoDataService } from '../../services/demoDataService';
-
-/**
- * Enhanced Meal Planner Index Screen
- * 
- * This component integrates the enhanced meal planner with automatic daily meal plan generation.
- * 
- * AUTOMATIC MEAL PLAN GENERATION:
- * - The useEnhancedMealPlanner hook automatically detects when a new day starts
- * - It generates fresh meal plans for today if none exists
- * - It preserves existing meal plans for past/future dates
- * - Generation is triggered by: new day detection, date change, manual refresh
- * 
- * WHEN MEAL PLANS ARE GENERATED:
- * 1. First time user opens the app (no last login date)
- * 2. User opens app on a new day (last login date != today)
- * 3. User navigates to a date with no existing meal plan
- * 4. User manually triggers generation via "Generate Meal Plan" button
- * 5. User forces new plan generation via "New Plan" button
- * 
- * The meal plan service handles all the logic for determining when to generate
- * new plans vs. loading cached plans, ensuring optimal performance and UX.
- */
 
 interface MealItem {
   id: string;
@@ -72,32 +46,27 @@ export default function IndexScreen() {
   const [showMealModal, setShowMealModal] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<any>(null);
   const [showNutritionScanner, setShowNutritionScanner] = useState(false);
+  const [showAddMealModal, setShowAddMealModal] = useState(false);
   const [isAppInitialized, setIsAppInitialized] = useState(false);
   const [initializationError, setInitializationError] = useState<string | null>(null);
-  const [dailyCalorieTarget, setDailyCalorieTarget] = useState<number>(0);
+  const [dailyCalorieTarget, setDailyCalorieTarget] = useState<number>(2000);
   const [mealCache, setMealCache] = useState<{ [mealId: string]: any }>({});
   const [selectedFoodChoice, setSelectedFoodChoice] = useState<{ [mealId: string]: any }>({});
-  const router = useRouter();
+  const [individualMeals, setIndividualMeals] = useState<IndividualMealItem[]>([]);
+  const [isAddingMeal, setIsAddingMeal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Initialize app on component mount
   useEffect(() => {
     const initializeApp = async () => {
       try {
         console.log('🚀 IndexScreen: Initializing app...');
-        const result = await appInitService.initializeApp();
 
-        if (result.success) {
-          setIsAppInitialized(true);
-          if (result.isDemoMode) {
-            console.log('🎭 IndexScreen: Running in demo mode');
-          }
-          if (result.error) {
-            console.warn('⚠️ IndexScreen: Initialized with warning:', result.error);
-          }
-        } else {
-          setInitializationError(result.error || 'Failed to initialize app');
-          setIsAppInitialized(true); // Allow partial functionality
-        }
+        // Initialize the unified cache
+        await unifiedCache.initializeCache();
+
+        setIsAppInitialized(true);
+        console.log('✅ IndexScreen: App initialized successfully');
       } catch (error) {
         console.error('❌ IndexScreen: App initialization failed:', error);
         setInitializationError('Failed to initialize app');
@@ -108,45 +77,29 @@ export default function IndexScreen() {
     initializeApp();
   }, []);
 
-  const {
-    meals,
-    selectedDate,
-    setSelectedDate,
-    isGeneratingMealPlan,
-    isLoadingMealPlan,
-    lastError,
-    generateMealPlan,
-    refreshMealPlan,
-    forceNewMealPlan,
-    updateMealStatus,
-    getTotalCalories,
-    getCompletedCalories,
-    getDailyCalorieTarget,
-    clearError,
-  } = useEnhancedMealPlanner();
-
-  // Load daily calorie target when meals change
+  // Load daily calorie target from individual meals
   useEffect(() => {
-    const loadCalorieTarget = async () => {
+    const calculateDailyTarget = () => {
+      const totalCalories = individualMeals.reduce((total, meal) => total + meal.targetCalories, 0);
+      setDailyCalorieTarget(totalCalories || 2000);
+    };
+
+    calculateDailyTarget();
+  }, [individualMeals]);
+
+  // Load individual meals when selected date changes
+  useEffect(() => {
+    const loadIndividualMeals = async () => {
       try {
-        const target = await getDailyCalorieTarget();
-        console.log('📊 Daily calorie target loaded:', target);
-        setDailyCalorieTarget(target);
+        const meals = await individualMealPlanService.getIndividualMealsForDate(selectedDate);
+        setIndividualMeals(meals);
       } catch (error) {
-        console.error('Failed to load daily calorie target:', error);
-        const fallback = getTotalCalories();
-        console.log('📊 Using fallback calorie target:', fallback);
-        setDailyCalorieTarget(fallback); // Fallback to meal total
+        console.error('Failed to load individual meals:', error);
       }
     };
 
-    if (meals.length > 0) {
-      loadCalorieTarget();
-    } else {
-      // If no meals, set a reasonable default
-      setDailyCalorieTarget(2000);
-    }
-  }, [meals, getDailyCalorieTarget, getTotalCalories]);
+    loadIndividualMeals();
+  }, [selectedDate]);
 
   // Load meal cache when selected date changes
   useEffect(() => {
@@ -270,6 +223,16 @@ export default function IndexScreen() {
     }
   };
 
+  // Helper function to check if meal is from individual meal service
+  const isIndividualMeal = (mealId: string) => {
+    return individualMeals.some(meal => meal.id === mealId);
+  };
+
+  // Helper function to get individual meal data
+  const getIndividualMealData = (mealId: string) => {
+    return individualMeals.find(meal => meal.id === mealId);
+  };
+
   const saveMealChoice = async (mealId: string, foodChoice: any) => {
     try {
       await unifiedCache.initializeCache();
@@ -295,9 +258,6 @@ export default function IndexScreen() {
 
   const updateMealStatusWithCache = async (mealId: string, status: MealItem['status']) => {
     try {
-      // Update the meal status in the hook
-      await updateMealStatus(mealId, status);
-
       // Update unified cache
       await unifiedCache.initializeCache();
       const dayCache = await unifiedCache.getDayCache(selectedDate);
@@ -314,21 +274,13 @@ export default function IndexScreen() {
         await unifiedCache.updateMealPlan(selectedDate, dayCache.meal_plan);
       }
 
+      // Also update individual meal status
+      await individualMealPlanService.updateMealStatus(mealId, status === 'completed' ? 'completed' : status === 'skipped' ? 'skipped' : 'planned', selectedDate);
+
       console.log(`✅ Updated meal status: ${mealId} -> ${status}`);
     } catch (error) {
       console.error('Failed to update meal status with cache:', error);
     }
-  };
-
-  const handleGenerateNewPlan = () => {
-    Alert.alert(
-      'Generate New Meal Plan',
-      'Are you sure you want to generate a new meal plan? This will replace the current plan.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Generate', onPress: forceNewMealPlan, style: 'default' }
-      ]
-    );
   };
 
   const handleSetupDemoData = async () => {
@@ -343,12 +295,11 @@ export default function IndexScreen() {
             try {
               await demoDataService.setupDemoData();
 
-              // Reinitialize the app
-              const result = await appInitService.initializeApp();
-              if (result.success) {
-                clearError();
-                refreshMealPlan();
-              }
+              // Reinitialize the cache
+              await unifiedCache.initializeCache();
+
+              // Demo data setup complete - meals will be loaded automatically
+              console.log('✅ Demo data setup complete');
             } catch (error) {
               console.error('Failed to setup demo data:', error);
               Alert.alert('Error', 'Failed to setup demo data. Please try again.');
@@ -378,9 +329,41 @@ export default function IndexScreen() {
     }
   };
 
+  const handleAddMeal = async (mealData: any) => {
+    setIsAddingMeal(true);
+    try {
+      console.log('Adding new meal:', mealData);
+
+      // Generate individual meal plan
+      const mealPlan = await individualMealPlanService.generateIndividualMealPlan(mealData);
+
+      // Convert to meal item
+      const mealItem = individualMealPlanService.convertToMealItem(mealPlan, selectedDate);
+
+      // Save to cache
+      await individualMealPlanService.saveIndividualMeal(mealItem, selectedDate);
+
+      // Reload meals
+      const updatedMeals = await individualMealPlanService.getIndividualMealsForDate(selectedDate);
+      setIndividualMeals(updatedMeals);
+
+      console.log('✅ Meal added successfully:', mealItem);
+
+    } catch (error) {
+      console.error('Failed to add meal:', error);
+      throw error; // Re-throw to let modal handle the error
+    } finally {
+      setIsAddingMeal(false);
+    }
+  };
+
   const isToday = selectedDate.toDateString() === new Date().toDateString();
-  const totalCalories = getTotalCalories();
-  const completedCalories = getCompletedCalories();
+
+  // Calculate calories from individual meals
+  const totalCalories = individualMeals.reduce((total, meal) => total + (meal.targetCalories || 0), 0);
+  const completedCalories = individualMeals
+    .filter(meal => meal.status === 'completed')
+    .reduce((total, meal) => total + (meal.selectedOption?.calories || meal.targetCalories || 0), 0);
 
   // Show loading screen during app initialization
   if (!isAppInitialized) {
@@ -435,16 +418,6 @@ export default function IndexScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Error Display */}
-      {lastError && (
-        <View style={indexTabStyles.errorContainer}>
-          <Text style={indexTabStyles.errorText}>⚠️ {lastError}</Text>
-          <TouchableOpacity onPress={clearError} style={indexTabStyles.errorCloseButton}>
-            <Text style={indexTabStyles.errorCloseText}>×</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
       {/* Reminders */}
       <View style={indexTabStyles.reminderContainer}>
         <Bell size={16} color="#F59E0B" />
@@ -464,58 +437,64 @@ export default function IndexScreen() {
           </Text>
         </View>
 
-        {/* Empty State for No Meal Plan */}
-        {meals.length === 0 && !isLoadingMealPlan && !isGeneratingMealPlan && (
+        {/* Empty State for No Meal Plan - Only show when no individual meals */}
+        {individualMeals.length === 0 && (
           <View style={indexTabStyles.emptyState}>
-            <Text style={indexTabStyles.emptyStateTitle}>No Meal Plan Available</Text>
+            <Text style={indexTabStyles.emptyStateTitle}>Belum Ada Jadwal Makan</Text>
             <Text style={indexTabStyles.emptyStateText}>
-              {lastError && lastError.includes('onboarding')
-                ? "Please complete your profile setup to get personalized meal plans."
-                : isToday
-                  ? "Let's create your personalized meal plan for today!"
-                  : "No meal plan found for this date."
-              }
+              Tambahkan menu makanan sesuai dengan preferensi dan budget Anda.
+              Dapatkan rekomendasi makanan yang sehat dan sesuai kebutuhan kalori harian.
             </Text>
 
-            {lastError && (lastError.includes('user data') || lastError.includes('onboarding') || lastError.includes('profile setup')) && (
-              <>
-                <TouchableOpacity
-                  style={[indexTabStyles.generateButton, { backgroundColor: '#3B82F6', marginBottom: 10 }]}
-                  onPress={() => {
-                    router.push('/onboarding');
-                  }}
-                >
-                  <Text style={indexTabStyles.generateButtonText}>Complete Profile Setup</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[indexTabStyles.generateButton, { backgroundColor: '#10B981', marginBottom: 10 }]}
-                  onPress={handleSetupDemoData}
-                >
-                  <Text style={indexTabStyles.generateButtonText}>Use Demo Data (Testing)</Text>
-                </TouchableOpacity>
-              </>
-            )}
-
-            {!lastError || (!lastError.includes('onboarding') && !lastError.includes('profile setup')) ? (
-              <TouchableOpacity
-                style={indexTabStyles.generateButton}
-                onPress={generateMealPlan}
-              >
-                <Text style={indexTabStyles.generateButtonText}>Generate Meal Plan</Text>
-              </TouchableOpacity>
-            ) : null}
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: 12,
+              padding: 12,
+              backgroundColor: '#F0F9FF',
+              borderRadius: 8,
+              borderLeftWidth: 4,
+              borderLeftColor: '#0284C7'
+            }}>
+              <Text style={{
+                fontSize: 14,
+                color: '#0369A1',
+                textAlign: 'center',
+                lineHeight: 20
+              }}>
+                💡 Gunakan tombol &quot;Tambah Menu&quot; untuk menambahkan sarapan, makan siang, makan malam, atau snack
+              </Text>
+            </View>
           </View>
         )}
 
-        {meals.map((meal) => (
+        {/* Show added individual meals */}
+        {individualMeals.map((meal) => (
           <TouchableOpacity
             key={meal.id}
             style={[
               indexTabStyles.mealCard,
-              meal.status === 'completed' && indexTabStyles.mealCardCompleted,
-              meal.isOptional && indexTabStyles.mealCardOptional
+              meal.status === 'completed' && indexTabStyles.mealCardCompleted
             ]}
-            onPress={() => openMealModal(meal)}
+            onPress={() => {
+              // Convert individual meal to compatible format for modal
+              const compatibleMeal = {
+                id: meal.id,
+                type: meal.type,
+                timeRange: meal.timeRange,
+                rekomendasi_menu: meal.description || "Menu sesuai preferensi",
+                targetKalori: meal.targetCalories,
+                status: meal.status === 'completed' ? 'completed' as const :
+                  meal.status === 'skipped' ? 'skipped' as const : 'upcoming' as const,
+                details: {
+                  deskripsi: meal.description,
+                  pilihan_menu: meal.menuOptions.map(option => option.name),
+                  asupan_cairan: meal.waterIntake
+                }
+              };
+              openMealModal(compatibleMeal);
+            }}
           >
             <View style={indexTabStyles.mealHeader}>
               <View style={indexTabStyles.mealInfo}>
@@ -525,9 +504,6 @@ export default function IndexScreen() {
                     <Text style={indexTabStyles.mealType}>
                       {getMealTitle(meal.type)}
                     </Text>
-                    {meal.isOptional && (
-                      <Text style={indexTabStyles.optionalBadge}>Opsional</Text>
-                    )}
                   </View>
                   <Text style={indexTabStyles.mealTime}>{meal.timeRange}</Text>
                 </View>
@@ -538,21 +514,30 @@ export default function IndexScreen() {
                   indexTabStyles.mealFood,
                   meal.status === 'completed' && indexTabStyles.completedText
                 ]}>
-                  {"Dapatkan rekomendasi"}
+                  {meal.description || "Menu berdasarkan preferensi Anda"}
                 </Text>
                 <Text style={indexTabStyles.mealCalories}>
-                  Target: {meal.targetKalori} kcal
+                  Target: {meal.targetCalories} kcal
                 </Text>
+                {meal.menuOptions.length > 0 && (
+                  <Text style={{
+                    fontSize: 12,
+                    color: '#10B981',
+                    marginTop: 2
+                  }}>
+                    {meal.menuOptions.length} pilihan menu • Mulai dari Rp {Math.min(...meal.menuOptions.map(m => m.price)).toLocaleString()}
+                  </Text>
+                )}
                 <View style={indexTabStyles.statusContainer}>
                   <View style={[
                     indexTabStyles.statusIndicator,
-                    { backgroundColor: getStatusColor(meal.status) }
+                    { backgroundColor: getStatusColor(meal.status === 'completed' ? 'completed' : meal.status === 'skipped' ? 'skipped' : 'upcoming') }
                   ]} />
                   <Text style={[
                     indexTabStyles.statusText,
-                    { color: getStatusColor(meal.status) }
+                    { color: getStatusColor(meal.status === 'completed' ? 'completed' : meal.status === 'skipped' ? 'skipped' : 'upcoming') }
                   ]}>
-                    {getStatusText(meal.status)}
+                    {getStatusText(meal.status === 'completed' ? 'completed' : meal.status === 'skipped' ? 'skipped' : 'upcoming')}
                   </Text>
                 </View>
               </View>
@@ -564,9 +549,19 @@ export default function IndexScreen() {
         <View style={[indexTabStyles.quickActions, { flexDirection: 'column' }]}>
           {/* First row: Add Meal and Scan Food */}
           <View style={{ flexDirection: 'row', gap: 12, marginBottom: 12 }}>
-            <TouchableOpacity style={[indexTabStyles.actionButton, { backgroundColor: '#10B981' }]}>
-              <Plus size={20} color="#FFFFFF" />
-              <Text style={indexTabStyles.actionButtonText}>Tambah Menu</Text>
+            <TouchableOpacity
+              style={[indexTabStyles.actionButton, { backgroundColor: '#10B981' }]}
+              onPress={() => setShowAddMealModal(true)}
+              disabled={isAddingMeal}
+            >
+              {isAddingMeal ? (
+                <ActivityIndicator size={20} color="#FFFFFF" />
+              ) : (
+                <Plus size={20} color="#FFFFFF" />
+              )}
+              <Text style={indexTabStyles.actionButtonText}>
+                {isAddingMeal ? 'Menambah...' : 'Tambah Menu'}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -577,34 +572,6 @@ export default function IndexScreen() {
               <Text style={indexTabStyles.actionButtonText}>Scan Makanan</Text>
             </TouchableOpacity>
           </View>
-
-          {/* Second row: Refresh and New Plan */}
-          {/* <View style={{ flexDirection: 'row', gap: 12 }}>
-            <TouchableOpacity
-              style={[indexTabStyles.actionButton, { backgroundColor: '#6B7280' }]}
-              onPress={refreshMealPlan}
-              disabled={isLoadingMealPlan || isGeneratingMealPlan}
-            >
-              <RefreshCw size={16} color="#FFFFFF" />
-              <Text style={indexTabStyles.actionButtonText}>Refresh</Text>
-            </TouchableOpacity>
-
-            {isToday ? (
-              <TouchableOpacity
-                style={[indexTabStyles.actionButton, { backgroundColor: '#16A34A' }]}
-                onPress={handleGenerateNewPlan}
-                disabled={isLoadingMealPlan || isGeneratingMealPlan}
-              >
-                <Utensils size={16} color="#FFFFFF" />
-                <Text style={indexTabStyles.actionButtonText}>New Plan</Text>
-              </TouchableOpacity>
-            ) : (
-              // Empty placeholder to maintain grid layout
-              <View style={[indexTabStyles.actionButton, { backgroundColor: '#E5E7EB', opacity: 0.5 }]}>
-                <Text style={[indexTabStyles.actionButtonText, { color: '#9CA3AF' }]}>Available Today</Text>
-              </View>
-            )}
-          </View> */}
         </View>
       </ScrollView>
 
@@ -650,44 +617,114 @@ export default function IndexScreen() {
             <View style={indexTabStyles.foodChoicesCard}>
               <Text style={indexTabStyles.sectionTitle}>Pilihan Makanan</Text>
               <View style={indexTabStyles.foodChoicesList}>
-                {(selectedMeal?.details?.pilihan_menu && selectedMeal.details.pilihan_menu.length > 0) ? (
-                  selectedMeal.details.pilihan_menu.map((menuItem: string, index: number) => {
-                    const foodChoice = { name: menuItem, calories: Math.round(selectedMeal?.targetKalori / (selectedMeal?.details?.pilihan_menu?.length || 1) || 0) };
-                    const isSelected = selectedFoodChoice[selectedMeal?.id]?.name === foodChoice.name;
-                    return (
-                      <TouchableOpacity
-                        key={index}
-                        style={[
-                          indexTabStyles.foodChoiceItem,
-                          isSelected && { backgroundColor: '#E0F2FE', borderColor: '#0284C7', borderWidth: 2 }
-                        ]}
-                        onPress={() => saveMealChoice(selectedMeal?.id, foodChoice)}
-                      >
-                        <Text style={[
-                          indexTabStyles.foodChoiceText,
-                          isSelected && { color: '#0284C7', fontWeight: '600' }
-                        ]}>
-                          {foodChoice.name} {isSelected && '✓'}
+                {(() => {
+                  const individualMealData = getIndividualMealData(selectedMeal?.id);
+                  const isFromIndividualService = isIndividualMeal(selectedMeal?.id);
+
+                  if (isFromIndividualService && individualMealData) {
+                    // Show individual meal options with price
+                    return individualMealData.menuOptions.map((option, index) => {
+                      const isSelected = selectedFoodChoice[selectedMeal?.id]?.name === option.name;
+                      return (
+                        <TouchableOpacity
+                          key={index}
+                          style={[
+                            indexTabStyles.foodChoiceItem,
+                            isSelected && { backgroundColor: '#E0F2FE', borderColor: '#0284C7', borderWidth: 2 }
+                          ]}
+                          onPress={async () => {
+                            const foodChoice = {
+                              name: option.name,
+                              calories: option.calories,
+                              price: option.price,
+                              description: option.description
+                            };
+                            await saveMealChoice(selectedMeal?.id, foodChoice);
+                            // Also save to individual meal service
+                            await individualMealPlanService.selectMenuOption(selectedMeal?.id, foodChoice, selectedDate);
+                          }}
+                        >
+                          <View style={{ flex: 1 }}>
+                            <Text style={[
+                              indexTabStyles.foodChoiceText,
+                              isSelected && { color: '#0284C7', fontWeight: '600' }
+                            ]}>
+                              {option.name} {isSelected && '✓'}
+                            </Text>
+                            <Text style={{
+                              fontSize: 12,
+                              color: '#6B7280',
+                              marginTop: 2,
+                              lineHeight: 16
+                            }}>
+                              {option.description}
+                            </Text>
+                            <View style={{
+                              flexDirection: 'row',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              marginTop: 4
+                            }}>
+                              <Text style={[
+                                indexTabStyles.foodChoiceCalories,
+                                isSelected && { color: '#0284C7', fontWeight: '600' }
+                              ]}>
+                                {option.calories} kcal
+                              </Text>
+                              <Text style={{
+                                fontSize: 14,
+                                fontWeight: '600',
+                                color: isSelected ? '#0284C7' : '#059669'
+                              }}>
+                                Rp {option.price.toLocaleString()}
+                              </Text>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    });
+                  } else {
+                    // Legacy meal options without price
+                    return (selectedMeal?.details?.pilihan_menu && selectedMeal.details.pilihan_menu.length > 0) ? (
+                      selectedMeal.details.pilihan_menu.map((menuItem: string, index: number) => {
+                        const foodChoice = { name: menuItem, calories: Math.round(selectedMeal?.targetKalori / (selectedMeal?.details?.pilihan_menu?.length || 1) || 0) };
+                        const isSelected = selectedFoodChoice[selectedMeal?.id]?.name === foodChoice.name;
+                        return (
+                          <TouchableOpacity
+                            key={index}
+                            style={[
+                              indexTabStyles.foodChoiceItem,
+                              isSelected && { backgroundColor: '#E0F2FE', borderColor: '#0284C7', borderWidth: 2 }
+                            ]}
+                            onPress={() => saveMealChoice(selectedMeal?.id, foodChoice)}
+                          >
+                            <Text style={[
+                              indexTabStyles.foodChoiceText,
+                              isSelected && { color: '#0284C7', fontWeight: '600' }
+                            ]}>
+                              {foodChoice.name} {isSelected && '✓'}
+                            </Text>
+                            <Text style={[
+                              indexTabStyles.foodChoiceCalories,
+                              isSelected && { color: '#0284C7', fontWeight: '600' }
+                            ]}>
+                              {foodChoice.calories} kcal
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })
+                    ) : (
+                      <View style={indexTabStyles.foodChoiceItem}>
+                        <Text style={indexTabStyles.foodChoiceText}>
+                          {selectedMeal?.rekomendasi_menu || 'No food options available'}
                         </Text>
-                        <Text style={[
-                          indexTabStyles.foodChoiceCalories,
-                          isSelected && { color: '#0284C7', fontWeight: '600' }
-                        ]}>
-                          {foodChoice.calories} kcal
+                        <Text style={indexTabStyles.foodChoiceCalories}>
+                          {selectedMeal?.targetKalori || 0} kcal
                         </Text>
-                      </TouchableOpacity>
+                      </View>
                     );
-                  })
-                ) : (
-                  <View style={indexTabStyles.foodChoiceItem}>
-                    <Text style={indexTabStyles.foodChoiceText}>
-                      {selectedMeal?.rekomendasi_menu || 'No food options available'}
-                    </Text>
-                    <Text style={indexTabStyles.foodChoiceCalories}>
-                      {selectedMeal?.targetKalori || 0} kcal
-                    </Text>
-                  </View>
-                )}
+                  }
+                })()}
               </View>
 
               {/* Show selected choice summary */}
@@ -705,7 +742,15 @@ export default function IndexScreen() {
                   </Text>
                   <Text style={{ fontSize: 12, color: '#0369A1', marginTop: 2 }}>
                     {selectedFoodChoice[selectedMeal?.id].calories} calories
+                    {selectedFoodChoice[selectedMeal?.id].price &&
+                      ` • Rp ${selectedFoodChoice[selectedMeal?.id].price.toLocaleString()}`
+                    }
                   </Text>
+                  {selectedFoodChoice[selectedMeal?.id].description && (
+                    <Text style={{ fontSize: 12, color: '#0369A1', marginTop: 2, fontStyle: 'italic' }}>
+                      {selectedFoodChoice[selectedMeal?.id].description}
+                    </Text>
+                  )}
                 </View>
               )}
 
@@ -845,12 +890,19 @@ export default function IndexScreen() {
         }}
       />
 
+      {/* Add Meal Modal */}
+      <AddMealModal
+        visible={showAddMealModal}
+        onClose={() => setShowAddMealModal(false)}
+        onAddMeal={handleAddMeal}
+      />
+
       {/* Loading Overlay */}
       <LoadingOverlay
-        visible={isLoadingMealPlan || isGeneratingMealPlan}
-        title={isGeneratingMealPlan ? 'Generate jadwal makan...' : 'Loading...'}
-        subtitle={(isGeneratingMealPlan || (isLoadingMealPlan && lastError?.includes('taking longer')))
-          ? 'NutriAdvisor AI sedang menyiapkan rekomendasi makanan. Mohon tunggu sebentar...'
+        visible={isAddingMeal}
+        title={isAddingMeal ? 'Menambah menu...' : 'Loading...'}
+        subtitle={isAddingMeal
+          ? 'AI sedang membuat rekomendasi menu berdasarkan preferensi Anda...'
           : undefined
         }
       />

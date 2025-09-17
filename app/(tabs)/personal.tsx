@@ -36,10 +36,11 @@ export default function PersonalScreen() {
       try {
         const hasSeenPersonal = await AsyncStorage.getItem('hasSeenPersonal');
         const hasCompletedOnboarding = await AsyncStorage.getItem('hasCompletedOnboarding');
-
+        
         // If user completed onboarding but hasn't seen personal tab yet
         if (hasCompletedOnboarding === 'true' && hasSeenPersonal !== 'true') {
           setIsFirstTimeVisit(true);
+          await AsyncStorage.setItem('hasSeenPersonal', 'true');
         }
       } catch (error) {
         console.error('Error checking first time visit:', error);
@@ -48,20 +49,6 @@ export default function PersonalScreen() {
 
     checkFirstTimeVisit();
   }, []);
-
-  const handleContinueToApp = async () => {
-    try {
-      // Mark that user has seen personal tab
-      await AsyncStorage.setItem('hasSeenPersonal', 'true');
-      console.log('✅ Personal tab completed, navigating to main app');
-
-      // Navigate to main tabs (index)
-      router.replace('/(tabs)');
-    } catch (error) {
-      console.error('Error completing personal setup:', error);
-      router.replace('/(tabs)');
-    }
-  };
 
   if (!profile) {
     return (

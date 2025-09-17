@@ -1,12 +1,12 @@
 /**
- * Test Script for Enhanced Meal Plan API Integration
+ * Test Script for Individual Meal Plan API Integration
  * 
- * This script tests the meal plan API integration functionality
- * including daily meal generation and caching logic.
+ * This script tests the individual meal plan API integration functionality
+ * including individual meal generation and caching logic.
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { mealPlanService } from '../services/mealPlanAPI';
+import { individualMealPlanService } from '../services/individualMealPlanAPI';
 
 // Test data
 const testUserData = {
@@ -59,226 +59,139 @@ const testPersonalPlan = {
 };
 
 /**
- * Test Suite for Meal Plan API Integration
+ * Test Suite for Individual Meal Plan API Integration
  */
-class MealPlanAPITester {
+class IndividualMealPlanAPITester {
 
     /**
-     * Test basic meal plan generation
+     * Test basic individual meal generation
      */
-    async testBasicMealPlanGeneration() {
-        console.log('🧪 Testing basic meal plan generation...');
+    async testBasicIndividualMealGeneration() {
+        console.log('🧪 Testing basic individual meal generation...');
 
         try {
-            const result = await mealPlanService.generateDailyMealPlan(
-                testUserData,
-                testPersonalPlan
-            );
+            const request = {
+                meal_type: 'sarapan' as const,
+                preference: 'Makanan Indonesia',
+                budget: 'sedang' as const
+            };
 
-            if (result.success && result.data) {
-                console.log('✅ Basic meal plan generation successful');
+            const result = await individualMealPlanService.generateIndividualMealPlan(request);
+
+            if (result && result.deskripsi_rekomendasi_menu) {
+                console.log('✅ Basic individual meal generation successful');
                 console.log('📋 Generated meal plan structure:');
-
-                // Check required meals
-                const requiredMeals = ['sarapan', 'makan_siang', 'makan_malam'];
-                for (const meal of requiredMeals) {
-                    if (result.data[meal as keyof typeof result.data]) {
-                        console.log(`  ✅ ${meal}: OK`);
-                    } else {
-                        console.log(`  ❌ ${meal}: Missing`);
-                    }
-                }
-
-                // Check optional meals
-                const optionalMeals = ['snack_pagi_opsional', 'snack_sore_opsional'];
-                for (const meal of optionalMeals) {
-                    if (result.data[meal as keyof typeof result.data]) {
-                        console.log(`  ✅ ${meal}: Present`);
-                    } else {
-                        console.log(`  ℹ️ ${meal}: Not included`);
-                    }
-                }
+                console.log(`  ✅ Meal Type: ${result.meal_type}`);
+                console.log(`  ✅ Time Range: ${result.range_waktu}`);
+                console.log(`  ✅ Description: ${result.deskripsi_rekomendasi_menu}`);
+                console.log(`  ✅ Menu Options: ${result.list_pilihan_menu.length} options`);
+                console.log(`  ✅ Target Calories: ${result['target_kalori_(kcal)']} kcal`);
 
                 return true;
             } else {
-                console.log('❌ Basic meal plan generation failed:', result.error?.message);
+                console.log('❌ Basic individual meal generation failed: No menu recommendation returned');
                 return false;
             }
         } catch (error) {
-            console.log('❌ Error in basic meal plan generation:', error);
+            console.log('❌ Error in basic individual meal generation:', error);
             return false;
         }
     }
 
     /**
-     * Test meal plan mapping to UI format
+     * Test meal conversion to UI format
      */
-    async testMealPlanMapping() {
-        console.log('\n🧪 Testing meal plan mapping to UI format...');
+    async testMealConversion() {
+        console.log('\n🧪 Testing meal conversion to UI format...');
 
         try {
-            const result = await mealPlanService.generateDailyMealPlan(
-                testUserData,
-                testPersonalPlan
-            );
+            const request = {
+                meal_type: 'makan_siang' as const,
+                preference: 'Makanan Indonesia',
+                budget: 'tinggi' as const
+            };
 
-            if (result.success && result.data) {
-                const mealItems = mealPlanService.mapMealPlanToItems(result.data);
+            const mealPlan = await individualMealPlanService.generateIndividualMealPlan(request);
 
-                console.log('✅ Meal plan mapping successful');
-                console.log(`📱 Generated ${mealItems.length} meal items for UI`);
+            if (mealPlan) {
+                const mealItem = individualMealPlanService.convertToMealItem(mealPlan);
 
-                // Validate meal items structure
-                for (const item of mealItems) {
-                    const hasRequiredFields = item.id && item.type && item.timeRange &&
-                        item.rekomendasi_menu && typeof item.targetKalori === 'number';
-
-                    if (hasRequiredFields) {
-                        console.log(`  ✅ ${item.type}: ${item.rekomendasi_menu} (${item.targetKalori} kcal)`);
-                    } else {
-                        console.log(`  ❌ ${item.type}: Missing required fields`);
-                    }
-                }
+                console.log('✅ Meal conversion successful');
+                console.log('📱 Converted meal item structure:');
+                console.log(`  ✅ ID: ${mealItem.id}`);
+                console.log(`  ✅ Type: ${mealItem.type}`);
+                console.log(`  ✅ Time Range: ${mealItem.timeRange}`);
+                console.log(`  ✅ Description: ${mealItem.description}`);
+                console.log(`  ✅ Target Calories: ${mealItem.targetCalories} kcal`);
+                console.log(`  ✅ Menu Options: ${mealItem.menuOptions.length} options`);
 
                 return true;
             } else {
-                console.log('❌ Failed to generate meal plan for mapping test');
+                console.log('❌ Failed to generate meal plan for conversion test');
                 return false;
             }
         } catch (error) {
-            console.log('❌ Error in meal plan mapping test:', error);
+            console.log('❌ Error in meal conversion test:', error);
             return false;
         }
     }
 
     /**
-     * Test date-based meal plan retrieval
+     * Test individual meal storage and retrieval
      */
-    async testDateBasedRetrieval() {
-        console.log('\n🧪 Testing date-based meal plan retrieval...');
+    async testMealStorage() {
+        console.log('\n🧪 Testing individual meal storage and retrieval...');
 
         try {
-            // Clear any existing data
+            // Clear existing data
             await AsyncStorage.clear();
-
-            // Set up test user data in storage
-            await AsyncStorage.setItem('userProfile', JSON.stringify(testUserData));
-            await AsyncStorage.setItem('nutritionPlan', JSON.stringify(testPersonalPlan));
 
             const testDate = new Date();
 
-            // First call should generate new meal plan
-            console.log('📅 First call for today - should generate new plan...');
-            const result1 = await mealPlanService.getMealPlanForDate(testDate);
+            // First check - should be empty
+            console.log('📅 First check - should have no meals...');
+            const initialMeals = await individualMealPlanService.getIndividualMealsForDate(testDate);
 
-            if (result1.success) {
-                console.log('✅ First retrieval successful (generated new plan)');
+            if (initialMeals.length === 0) {
+                console.log('✅ Initial state correct (no meals)');
             } else {
-                console.log('❌ First retrieval failed:', result1.error?.message);
+                console.log('❌ Initial state incorrect (found meals when should be empty)');
                 return false;
             }
 
-            // Second call should use cached meal plan
-            console.log('📅 Second call for today - should use cached plan...');
-            const result2 = await mealPlanService.getMealPlanForDate(testDate);
+            // Generate and save a meal
+            console.log('📅 Generating and saving a meal...');
+            const request = {
+                meal_type: 'sarapan' as const,
+                preference: 'Makanan Indonesia',
+                budget: 'sedang' as const
+            };
 
-            if (result2.success) {
-                console.log('✅ Second retrieval successful (used cached plan)');
+            const mealPlan = await individualMealPlanService.generateIndividualMealPlan(request);
+            if (mealPlan) {
+                const mealItem = individualMealPlanService.convertToMealItem(mealPlan);
+                await individualMealPlanService.saveIndividualMeal(mealItem, testDate);
+
+                console.log('✅ Meal saved successfully');
             } else {
-                console.log('❌ Second retrieval failed:', result2.error?.message);
+                console.log('❌ Failed to generate meal for storage test');
                 return false;
             }
 
-            // Test different date
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
+            // Retrieve saved meals
+            console.log('� Retrieving saved meals...');
+            const savedMeals = await individualMealPlanService.getIndividualMealsForDate(testDate);
 
-            console.log('📅 Call for tomorrow - should generate new plan...');
-            const result3 = await mealPlanService.getMealPlanForDate(tomorrow);
-
-            if (result3.success) {
-                console.log('✅ Tomorrow retrieval successful (generated new plan)');
+            if (savedMeals.length === 1 && savedMeals[0].type === 'sarapan') {
+                console.log('✅ Meal retrieval successful');
+                console.log(`   Found: ${savedMeals[0].type} - ${savedMeals[0].description}`);
+                return true;
             } else {
-                console.log('❌ Tomorrow retrieval failed:', result3.error?.message);
+                console.log('❌ Meal retrieval failed');
                 return false;
             }
-
-            return true;
         } catch (error) {
-            console.log('❌ Error in date-based retrieval test:', error);
-            return false;
-        }
-    }
-
-    /**
-     * Test error handling
-     */
-    async testErrorHandling() {
-        console.log('\n🧪 Testing error handling...');
-
-        try {
-            // Test with invalid user data
-            console.log('🔍 Testing with invalid user data...');
-            const invalidUserData = { name: "invalid" } as any;
-
-            const result1 = await mealPlanService.generateDailyMealPlan(
-                invalidUserData,
-                testPersonalPlan
-            );
-
-            if (!result1.success && result1.error) {
-                console.log('✅ Error handling for invalid user data works');
-                console.log(`   Error type: ${result1.error.type}`);
-                console.log(`   Error message: ${result1.error.message}`);
-            } else {
-                console.log('❌ Error handling for invalid user data failed');
-            }
-
-            // Test with invalid personal plan
-            console.log('🔍 Testing with invalid personal plan...');
-            const invalidPersonalPlan = { invalid: true } as any;
-
-            const result2 = await mealPlanService.generateDailyMealPlan(
-                testUserData,
-                invalidPersonalPlan
-            );
-
-            if (!result2.success && result2.error) {
-                console.log('✅ Error handling for invalid personal plan works');
-                console.log(`   Error type: ${result2.error.type}`);
-                console.log(`   Error message: ${result2.error.message}`);
-            } else {
-                console.log('❌ Error handling for invalid personal plan failed');
-            }
-
-            return true;
-        } catch (error) {
-            console.log('❌ Error in error handling test:', error);
-            return false;
-        }
-    }
-
-    /**
-     * Test debugging information
-     */
-    testDebuggingInfo() {
-        console.log('\n🧪 Testing debugging information...');
-
-        try {
-            const debugInfo = mealPlanService.createDebugInfo(testUserData, testPersonalPlan);
-
-            if (debugInfo && debugInfo.includes(testUserData.nama)) {
-                console.log('✅ Debug info generation works');
-                console.log('🐛 Sample debug info:');
-                console.log(debugInfo);
-            } else {
-                console.log('❌ Debug info generation failed');
-                return false;
-            }
-
-            return true;
-        } catch (error) {
-            console.log('❌ Error in debugging info test:', error);
+            console.log('❌ Error in meal storage test:', error);
             return false;
         }
     }
@@ -287,14 +200,12 @@ class MealPlanAPITester {
      * Run all tests
      */
     async runAllTests() {
-        console.log('🚀 Starting Enhanced Meal Plan API Integration Tests\n');
+        console.log('🚀 Starting Individual Meal Plan API Integration Tests\n');
 
         const tests = [
-            { name: 'Basic Meal Plan Generation', test: () => this.testBasicMealPlanGeneration() },
-            { name: 'Meal Plan Mapping', test: () => this.testMealPlanMapping() },
-            { name: 'Date-based Retrieval', test: () => this.testDateBasedRetrieval() },
-            { name: 'Error Handling', test: () => this.testErrorHandling() },
-            { name: 'Debugging Info', test: () => this.testDebuggingInfo() },
+            { name: 'Basic Individual Meal Generation', test: () => this.testBasicIndividualMealGeneration() },
+            { name: 'Meal Conversion', test: () => this.testMealConversion() },
+            { name: 'Meal Storage', test: () => this.testMealStorage() },
         ];
 
         let passedTests = 0;
@@ -313,7 +224,7 @@ class MealPlanAPITester {
         console.log(`\n📊 Test Results: ${passedTests}/${tests.length} tests passed`);
 
         if (passedTests === tests.length) {
-            console.log('🎉 All tests passed! Meal Plan API integration is working correctly.');
+            console.log('🎉 All tests passed! Individual Meal Plan API integration is working correctly.');
         } else {
             console.log('⚠️ Some tests failed. Please check the implementation.');
         }
@@ -323,7 +234,7 @@ class MealPlanAPITester {
 }
 
 // Export for use in testing
-export const mealPlanTester = new MealPlanAPITester();
+export const mealPlanTester = new IndividualMealPlanAPITester();
 
 // Example usage
 export async function runMealPlanTests() {
@@ -332,6 +243,6 @@ export async function runMealPlanTests() {
 
 // For debugging individual components
 export {
-    MealPlanAPITester, testPersonalPlan, testUserData
+    IndividualMealPlanAPITester, testPersonalPlan, testUserData
 };
 

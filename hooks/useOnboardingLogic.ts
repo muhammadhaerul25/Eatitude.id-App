@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert } from 'react-native';
-import { dataIntegration } from '../services/dataIntegrationService';
+import { unifiedCache } from '../services/unifiedCacheService';
 import { defaultProfile, steps, UserProfile, validateBeratBadan, validateTinggiBadan, validateUsia, validateWaktu } from './onboardingTypes';
 
 export const useOnboardingLogic = () => {
@@ -106,22 +106,25 @@ export const useOnboardingLogic = () => {
 
             console.log('📊 Onboarding data prepared:', onboardingData);
 
-            // Use the data integration service to complete onboarding
-            const result = await dataIntegration.completeOnboarding(onboardingData);
+            // Save user data directly to AsyncStorage
+            await AsyncStorage.setItem('userProfile', JSON.stringify(onboardingData));
 
-            if (result.success) {
-                console.log('✅ Onboarding completed successfully with data integration service');
+            // Initialize cache and save user data
+            await unifiedCache.initializeCache();
+            // Update user data in cache (personal plan will be generated separately)
+            await unifiedCache.updateCache((cache) => {
+                cache.user_data = onboardingData;
+            });
 
-                // Save basic onboarding completion flags
-                await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
-                await AsyncStorage.setItem('hasSeenWelcome', 'true');
+            console.log('✅ Onboarding completed successfully with user data saved');
 
-                // Navigate to personal tab first (not main tabs)
-                console.log('🚀 Navigating to personal tab for first-time setup');
-                router.replace('/(tabs)/personal');
-            } else {
-                throw new Error(result.error || 'Failed to complete onboarding');
-            }
+            // Save basic onboarding completion flags
+            await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
+            await AsyncStorage.setItem('hasSeenWelcome', 'true');
+
+            // Navigate to personal tab first (not main tabs)
+            console.log('🚀 Navigating to personal tab for first-time setup');
+            router.replace('/(tabs)/personal');
 
             // Navigate to personal screen with plan ready
             console.log('🚀 Navigating to personal tab');

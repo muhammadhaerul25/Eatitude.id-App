@@ -1,84 +1,51 @@
 /**
  * Data Debug Utility
  * 
- * Use this utility to check and debug your app's data integrity after the Indonesian standardization.
+ * Simplified utility to debug the individual meal planning system data.
  * 
  * Usage:
  * import { dataDebugger } from './utils/dataDebugger';
  * 
- * // Check current data status
- * const status = await dataDebugger.checkDataStatus();
- * console.log('Data Status:', status);
+ * // Check current cache status
+ * const status = await dataDebugger.checkCacheStatus();
+ * console.log('Cache Status:', status);
  * 
- * // Fix data integrity issues
- * const result = await dataDebugger.fixDataIssues();
- * console.log('Fix Result:', result);
+ * // Show cache contents
+ * await dataDebugger.showCacheContents();
  */
 
-import { dataIntegration } from '../services/dataIntegrationService';
+import { individualMealPlanService } from '../services/individualMealPlanAPI';
 import { unifiedCache } from '../services/unifiedCacheService';
 
 export class DataDebugger {
     /**
-     * Check current data status and get recommendations
+     * Check current cache status
      */
-    async checkDataStatus() {
-        console.log('🔍 Checking data status...');
+    async checkCacheStatus() {
+        console.log('🔍 Checking cache status...');
 
         try {
-            const status = await dataIntegration.getDataStatus();
+            await unifiedCache.initializeCache();
+            const cache = await unifiedCache.getCache();
 
-            console.log('📊 Data Status Report:');
-            console.log(`├─ User Data: ${status.hasUserData ? '✅' : '❌'} (Format: ${status.userDataFormat})`);
-            console.log(`├─ Personal Plan: ${status.hasPersonalPlan ? '✅' : '❌'} (Format: ${status.personalPlanFormat})`);
+            const status = {
+                hasUserData: !!cache.user_data,
+                hasPersonalPlan: !!cache.personal_plan,
+                dailyCacheKeys: Object.keys(cache.daily_cache),
+                cacheInitialized: true
+            };
 
-            if (status.missingFields.length > 0) {
-                console.log(`├─ Missing Fields: ⚠️ ${status.missingFields.join(', ')}`);
-            } else {
-                console.log('├─ Missing Fields: ✅ None');
-            }
-
-            if (status.recommendations.length > 0) {
-                console.log('└─ Recommendations:');
-                status.recommendations.forEach((rec, index) => {
-                    const isLast = index === status.recommendations.length - 1;
-                    console.log(`   ${isLast ? '└─' : '├─'} ${rec}`);
-                });
-            } else {
-                console.log('└─ Recommendations: ✅ All good!');
-            }
+            console.log('📊 Cache Status Report:');
+            console.log(`├─ User Data: ${status.hasUserData ? '✅' : '❌'}`);
+            console.log(`├─ Personal Plan: ${status.hasPersonalPlan ? '✅' : '❌'}`);
+            console.log(`├─ Daily Cache Keys: ${status.dailyCacheKeys.length} entries`);
+            console.log(`└─ Cache Initialized: ${status.cacheInitialized ? '✅' : '❌'}`);
 
             return status;
 
         } catch (error) {
-            console.error('❌ Error checking data status:', error);
+            console.error('❌ Error checking cache status:', error);
             return null;
-        }
-    }
-
-    /**
-     * Fix data integrity issues
-     */
-    async fixDataIssues() {
-        console.log('🔧 Attempting to fix data issues...');
-
-        try {
-            const result = await dataIntegration.fixDataIntegrity();
-
-            if (result.success) {
-                console.log('✅ Data issues fixed successfully!');
-                // Re-check status after fix
-                console.log('\n📊 Updated status:');
-                await this.checkDataStatus();
-            } else {
-                console.log('❌ Failed to fix data issues:', result.message);
-            }
-
-            return result;
-
-        } catch (error) {
-            console.error('❌ Error fixing data issues:', error);
-            return { success: false, message: 'Error occurred while fixing data' };
         }
     }
 
@@ -93,23 +60,16 @@ export class DataDebugger {
 
             console.log('\n👤 User Data:');
             if (cache.user_data) {
-                console.log('├─ Format:', 'nama' in cache.user_data ? 'Indonesian ✅' : 'English ⚠️');
-                if ('nama' in cache.user_data) {
-                    const userData = cache.user_data as any;
+                const userData = cache.user_data as any;
+                if ('nama' in userData) {
                     console.log(`├─ Nama: ${userData.nama}`);
                     console.log(`├─ Usia: ${userData.usia}`);
                     console.log(`├─ Jenis Kelamin: ${userData.jenis_kelamin}`);
                     console.log(`├─ Berat Badan: ${userData.berat_badan} kg`);
                     console.log(`├─ Tinggi Badan: ${userData.tinggi_badan} cm`);
                     console.log(`└─ Tujuan: ${userData.tujuan}`);
-                } else if ('name' in cache.user_data) {
-                    const userData = cache.user_data as any;
-                    console.log(`├─ Name: ${userData.name}`);
-                    console.log(`├─ Age: ${userData.age}`);
-                    console.log(`├─ Gender: ${userData.gender}`);
-                    console.log(`├─ Weight: ${userData.weight} kg`);
-                    console.log(`├─ Height: ${userData.height} cm`);
-                    console.log(`└─ Goal: ${userData.goal}`);
+                } else {
+                    console.log('└─ User data exists but format unknown');
                 }
             } else {
                 console.log('└─ No user data found');
@@ -117,16 +77,26 @@ export class DataDebugger {
 
             console.log('\n📋 Personal Plan:');
             if (cache.personal_plan) {
-                console.log('├─ Format:', 'kebutuhan_kalori' in cache.personal_plan ? 'API ✅' : 'Legacy ⚠️');
-                if ('kebutuhan_kalori' in cache.personal_plan) {
-                    const plan = cache.personal_plan as any;
+                const plan = cache.personal_plan as any;
+                if ('kebutuhan_kalori' in plan) {
                     console.log(`└─ Kebutuhan Kalori: ${JSON.stringify(plan.kebutuhan_kalori)}`);
-                } else if ('calories' in cache.personal_plan) {
-                    const plan = cache.personal_plan as any;
-                    console.log(`└─ Calories: ${plan.calories}`);
+                } else {
+                    console.log('└─ Personal plan exists but format unknown');
                 }
             } else {
                 console.log('└─ No personal plan found');
+            }
+
+            console.log('\n�️ Daily Cache:');
+            const dailyCacheKeys = Object.keys(cache.daily_cache);
+            if (dailyCacheKeys.length > 0) {
+                console.log(`├─ Dates cached: ${dailyCacheKeys.length}`);
+                dailyCacheKeys.forEach((dateKey: string, index: number) => {
+                    const isLast = index === dailyCacheKeys.length - 1;
+                    console.log(`${isLast ? '└─' : '├─'} ${dateKey}`);
+                });
+            } else {
+                console.log('└─ No daily cache entries');
             }
 
             return cache;
@@ -134,6 +104,29 @@ export class DataDebugger {
         } catch (error) {
             console.error('❌ Error showing cache contents:', error);
             return null;
+        }
+    }
+
+    /**
+     * Check individual meals for a specific date
+     */
+    async checkIndividualMeals(date: Date = new Date()) {
+        console.log(`🍽️ Checking individual meals for ${date.toDateString()}...`);
+
+        try {
+            const meals = await individualMealPlanService.getIndividualMealsForDate(date);
+
+            console.log(`📊 Found ${meals.length} individual meals:`);
+            meals.forEach((meal, index) => {
+                const isLast = index === meals.length - 1;
+                console.log(`${isLast ? '└─' : '├─'} ${meal.type}: ${meal.description} (${meal.targetCalories} kcal)`);
+            });
+
+            return meals;
+
+        } catch (error) {
+            console.error('❌ Error checking individual meals:', error);
+            return [];
         }
     }
 
@@ -148,20 +141,33 @@ export class DataDebugger {
 
         console.log('\n' + '='.repeat(50) + '\n');
 
-        // 2. Check data status
-        const status = await this.checkDataStatus();
+        // 2. Check cache status
+        const status = await this.checkCacheStatus();
 
         console.log('\n' + '='.repeat(50) + '\n');
 
-        // 3. Fix issues if any
-        if (status && (status.userDataFormat !== 'indonesian' || status.personalPlanFormat !== 'api' || status.missingFields.length > 0)) {
-            console.log('🔧 Issues detected, attempting to fix...\n');
-            await this.fixDataIssues();
-        } else {
-            console.log('✅ No issues detected, data is in good shape!\n');
-        }
+        // 3. Check individual meals
+        await this.checkIndividualMeals();
+
+        console.log('\n✅ Complete check finished!\n');
 
         return status;
+    }
+
+    /**
+     * Clear all cache data for testing
+     */
+    async clearAllCache() {
+        console.log('�️ Clearing all cache data...');
+
+        try {
+            await unifiedCache.clearCache();
+            console.log('✅ Cache cleared successfully');
+            return true;
+        } catch (error) {
+            console.error('❌ Error clearing cache:', error);
+            return false;
+        }
     }
 }
 

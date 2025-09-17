@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { APIIntegrationTest, logDataStructures, quickAPITest } from '../../utils/apiIntegrationTest';
+import { dataDebugger } from '../../utils/dataDebugger';
+import { mealPlanTester } from '../../utils/testMealPlanAPI';
 
 export default function APITestScreen() {
     const [isLoading, setIsLoading] = useState(false);
@@ -9,8 +10,8 @@ export default function APITestScreen() {
     const runQuickTest = async () => {
         setIsLoading(true);
         try {
-            await quickAPITest();
-            Alert.alert('Success', 'Quick test completed successfully! Check console for details.');
+            await dataDebugger.runCompleteCheck();
+            Alert.alert('Success', 'Quick cache test completed successfully! Check console for details.');
         } catch (error) {
             Alert.alert('Error', `Quick test failed: ${error}`);
         } finally {
@@ -21,20 +22,14 @@ export default function APITestScreen() {
     const runComprehensiveTests = async () => {
         setIsLoading(true);
         try {
-            const results = await APIIntegrationTest.runComprehensiveTests();
-            setTestResults(results);
-
-            const allPassed = results.connectionTest &&
-                results.personalPlanTest.success &&
-                results.mealPlanTest.success &&
-                results.cacheTest.success &&
-                results.integrationTest.success;
+            const results = await mealPlanTester.runAllTests();
+            setTestResults({ allPassed: results, message: 'Individual meal planning tests completed' });
 
             Alert.alert(
-                allPassed ? 'Success' : 'Some Tests Failed',
-                allPassed
-                    ? 'All API integration tests passed!'
-                    : 'Some tests failed. Check the results below and console for details.'
+                results ? 'Success' : 'Some Tests Failed',
+                results
+                    ? 'All individual meal tests passed!'
+                    : 'Some tests failed. Check the console for details.'
             );
         } catch (error) {
             Alert.alert('Error', `Comprehensive tests failed: ${error}`);
@@ -44,8 +39,8 @@ export default function APITestScreen() {
     };
 
     const showDataStructures = () => {
-        logDataStructures();
-        Alert.alert('Data Structures', 'Data structures logged to console. Check your development console.');
+        dataDebugger.showCacheContents();
+        Alert.alert('Cache Contents', 'Cache contents logged to console. Check your development console.');
     };
 
     const renderTestResult = (testName: string, result: boolean | { success: boolean; error?: string }) => {

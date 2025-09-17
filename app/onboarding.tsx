@@ -1,5 +1,5 @@
 import { ChevronRight } from 'lucide-react-native';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Image,
   SafeAreaView,
@@ -29,6 +29,13 @@ export default function OnboardingScreen() {
     selectGoal,
     updateProfile,
   } = useOnboardingLogic();
+
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // Scroll to top whenever the step changes
+  useEffect(() => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  }, [currentStep]);
 
   const renderStep = () => {
     switch (currentStep) {
@@ -78,7 +85,11 @@ export default function OnboardingScreen() {
       </View>
 
       {/* Step Content */}
-      <ScrollView style={onboardingStyles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        ref={scrollViewRef}
+        style={onboardingStyles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {renderStep()}
       </ScrollView>
 
