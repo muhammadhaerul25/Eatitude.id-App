@@ -14,9 +14,13 @@ import { ActivityRestStep } from '../components/onboarding/ActivityRestStep';
 import { BodyMetricsStep } from '../components/onboarding/BodyMetricsStep';
 import { GoalsObjectivesStep } from '../components/onboarding/GoalsObjectivesStep';
 import { PersonalInfoStep } from '../components/onboarding/PersonalInfoStep';
+
+
+import { useRouter } from 'expo-router';
 import { steps } from '../hooks/onboardingTypes';
 import { useOnboardingLogic } from '../hooks/useOnboardingLogic';
 import { onboardingStyles } from '../styles/tabs/onboardingStyles';
+
 
 export default function OnboardingScreen() {
   const {
@@ -28,8 +32,9 @@ export default function OnboardingScreen() {
     prevStep,
     selectGoal,
     updateProfile,
+    completeOnboarding,
   } = useOnboardingLogic();
-
+  const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Scroll to top whenever the step changes
@@ -51,6 +56,9 @@ export default function OnboardingScreen() {
         return null;
     }
   };
+
+
+  // No need for custom handleFinish; use completeOnboarding from logic
 
   return (
     <SafeAreaView style={onboardingStyles.container}>
@@ -107,7 +115,17 @@ export default function OnboardingScreen() {
             currentStep === 0 && onboardingStyles.nextButtonFull,
             (!validateCurrentStep() || isGeneratingPlan) && onboardingStyles.nextButtonDisabled
           ]}
-          onPress={nextStep}
+          onPress={async () => {
+            if (isGeneratingPlan) return;
+            if (currentStep === steps.length - 1) {
+              const result = await completeOnboarding();
+              if (result === 'success') {
+                router.replace('/(tabs)/personal');
+              }
+            } else {
+              nextStep();
+            }
+          }}
           disabled={isGeneratingPlan}
         >
           <Text style={[

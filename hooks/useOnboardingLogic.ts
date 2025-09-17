@@ -2,8 +2,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert } from 'react-native';
+import { generatePersonalPlanWithRetry } from '../services/personalPlanAPI';
 import { unifiedCache } from '../services/unifiedCacheService';
-import { defaultProfile, steps, UserProfile, validateBeratBadan, validateTinggiBadan, validateUsia, validateWaktu } from './onboardingTypes';
+import { defaultProfile, UserProfile, validateBeratBadan, validateTinggiBadan, validateUsia, validateWaktu } from './onboardingTypes';
+// Define steps array if not imported from onboardingTypes
+export const steps = [
+    'Biodata',
+    'Fisik',
+    'Aktivitas',
+    'Tujuan'
+];
 
 export const useOnboardingLogic = () => {
     const router = useRouter();
@@ -82,16 +90,22 @@ export const useOnboardingLogic = () => {
         }
     };
 
-    const completeOnboarding = async (): Promise<void> => {
+    const completeOnboarding = async (): Promise<'success' | 'error'> => {
         setIsGeneratingPlan(true);
         try {
             console.log('🚀 Starting onboarding completion with data integration service...');
+
+            // Map gender to API expected values
+            let jenis_kelamin_api = '';
+            if (profile.jenis_kelamin === 'male') jenis_kelamin_api = 'Laki-laki';
+            else if (profile.jenis_kelamin === 'female') jenis_kelamin_api = 'Perempuan';
+            else jenis_kelamin_api = profile.jenis_kelamin;
 
             // Create onboarding data in the new format
             const onboardingData = {
                 nama: profile.nama,
                 usia: profile.usia || 0,
-                jenis_kelamin: profile.jenis_kelamin,
+                jenis_kelamin: jenis_kelamin_api,
                 berat_badan: profile.berat_badan || 0,
                 tinggi_badan: profile.tinggi_badan || 0,
                 tingkat_aktivitas: profile.tingkat_aktivitas,
@@ -116,19 +130,27 @@ export const useOnboardingLogic = () => {
                 cache.user_data = onboardingData;
             });
 
+
+            // Generate personal plan after onboarding
+            try {
+                console.log('⚡ Generating personal plan after onboarding...');
+                const plan = await generatePersonalPlanWithRetry(onboardingData, 2, 60000);
+                if (plan) {
+                    await unifiedCache.updateUserProfile(onboardingData, plan);
+                }
+                console.log('✅ Personal plan generated and saved after onboarding');
+            } catch (planError) {
+                console.error('❌ Failed to generate personal plan after onboarding:', planError);
+                // Optionally, show a toast or alert here
+            }
+
             console.log('✅ Onboarding completed successfully with user data saved');
 
             // Save basic onboarding completion flags
             await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
             await AsyncStorage.setItem('hasSeenWelcome', 'true');
 
-            // Navigate to personal tab first (not main tabs)
-            console.log('🚀 Navigating to personal tab for first-time setup');
-            router.replace('/(tabs)/personal');
-
-            // Navigate to personal screen with plan ready
-            console.log('🚀 Navigating to personal tab');
-            // router.replace('/(tabs)/personal'); // Remove this since we already navigate above
+            return 'success';
         } catch (error) {
             console.error('❌ Error during onboarding completion:', error);
 
@@ -142,15 +164,9 @@ export const useOnboardingLogic = () => {
 
             Alert.alert(
                 'Onboarding Error',
-                errorMessage,
-                [
-                    {
-                        text: 'Lanjutkan ke Personal',
-                        onPress: () => router.replace('/(tabs)/personal'),
-                        style: 'default'
-                    }
-                ]
+                errorMessage
             );
+            return 'error';
         } finally {
             setIsGeneratingPlan(false);
         }
@@ -191,6 +207,7 @@ export const useOnboardingLogic = () => {
         currentStep,
         profile,
         isGeneratingPlan,
+        setIsGeneratingPlan,
         validateCurrentStep,
         nextStep,
         prevStep,
