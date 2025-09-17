@@ -162,11 +162,11 @@ export const indexTabStyles = StyleSheet.create({
         maxWidth: '45%',
     },
     mealFood: {
-        fontSize: 13,
-        fontWeight: '500',
-        color: '#374151',
-        textAlign: 'right',
+        fontSize: 12,
+        textAlign: "right",
+        flexWrap: "wrap", 
     },
+
     mealCalories: {
         fontSize: 12,
         color: '#6B7280',

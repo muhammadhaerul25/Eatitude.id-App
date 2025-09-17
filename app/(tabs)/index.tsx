@@ -544,51 +544,91 @@ export default function IndexScreen() {
             }}
           >
             <View style={indexTabStyles.mealHeader}>
-              <View style={indexTabStyles.mealInfo}>
-                <Text style={indexTabStyles.mealIcon}>{getMealIcon(meal.type)}</Text>
-                <View style={indexTabStyles.mealTextContainer}>
-                  <View style={indexTabStyles.mealTitleRow}>
-                    <Text style={indexTabStyles.mealType}>
-                      {getMealTitle(meal.type)}
+              <View style={[indexTabStyles.mealInfo, { flexDirection: "row" }]}>
+                {/* LEFT column */}
+                <View style={{ flex: 1, justifyContent: "space-between" }}>
+                  {/* Top left (icon + title + time) */}
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text style={indexTabStyles.mealIcon}>
+                      {getMealIcon(meal.type)}
+                    </Text>
+                    <View style={{ marginLeft: 6 }}>
+                      <Text style={indexTabStyles.mealType}>
+                        {getMealTitle(meal.type)}
+                      </Text>
+                      <Text style={indexTabStyles.mealTime}>{meal.timeRange}</Text>
+                    </View>
+                  </View>
+
+                  {/* Bottom left (kcal + menu) */}
+                  <View style={{ marginTop: 4 }}>
+                    <Text style={indexTabStyles.mealCalories}>
+                      Target: {meal.targetCalories} kcal
+                    </Text>
+                    {meal.menuOptions.length > 0 && (
+                      <Text style={{ fontSize: 12, color: "#10B981", marginTop: 2 }}>
+                        {meal.menuOptions.length} pilihan menu • Mulai dari Rp{" "}
+                        {Math.min(...meal.menuOptions.map((m) => m.price)).toLocaleString()}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+
+                {/* RIGHT column */}
+                <View style={{ flex: 1, justifyContent: "space-between", alignItems: "flex-end" }}>
+                  {/* Top right (description) */}
+                  <Text
+                    style={[
+                      indexTabStyles.mealFood,
+                      meal.status === "completed" && indexTabStyles.completedText,
+                    ]}
+                  >
+                    {meal.description || "Menu berdasarkan preferensi Anda"}
+                  </Text>
+
+                  {/* Bottom right (status) */}
+                  <View style={indexTabStyles.statusContainer}>
+                    <View
+                      style={[
+                        indexTabStyles.statusIndicator,
+                        {
+                          backgroundColor: getStatusColor(
+                            meal.status === "completed"
+                              ? "completed"
+                              : meal.status === "skipped"
+                                ? "skipped"
+                                : "upcoming"
+                          ),
+                        },
+                      ]}
+                    />
+                    <Text
+                      style={[
+                        indexTabStyles.statusText,
+                        {
+                          color: getStatusColor(
+                            meal.status === "completed"
+                              ? "completed"
+                              : meal.status === "skipped"
+                                ? "skipped"
+                                : "upcoming"
+                          ),
+                        },
+                      ]}
+                    >
+                      {getStatusText(
+                        meal.status === "completed"
+                          ? "completed"
+                          : meal.status === "skipped"
+                            ? "skipped"
+                            : "upcoming"
+                      )}
                     </Text>
                   </View>
-                  <Text style={indexTabStyles.mealTime}>{meal.timeRange}</Text>
-                </View>
-              </View>
-
-              <View style={indexTabStyles.mealDetails}>
-                <Text style={[
-                  indexTabStyles.mealFood,
-                  meal.status === 'completed' && indexTabStyles.completedText
-                ]}>
-                  {meal.description || "Menu berdasarkan preferensi Anda"}
-                </Text>
-                <Text style={indexTabStyles.mealCalories}>
-                  Target: {meal.targetCalories} kcal
-                </Text>
-                {meal.menuOptions.length > 0 && (
-                  <Text style={{
-                    fontSize: 12,
-                    color: '#10B981',
-                    marginTop: 2
-                  }}>
-                    {meal.menuOptions.length} pilihan menu • Mulai dari Rp {Math.min(...meal.menuOptions.map(m => m.price)).toLocaleString()}
-                  </Text>
-                )}
-                <View style={indexTabStyles.statusContainer}>
-                  <View style={[
-                    indexTabStyles.statusIndicator,
-                    { backgroundColor: getStatusColor(meal.status === 'completed' ? 'completed' : meal.status === 'skipped' ? 'skipped' : 'upcoming') }
-                  ]} />
-                  <Text style={[
-                    indexTabStyles.statusText,
-                    { color: getStatusColor(meal.status === 'completed' ? 'completed' : meal.status === 'skipped' ? 'skipped' : 'upcoming') }
-                  ]}>
-                    {getStatusText(meal.status === 'completed' ? 'completed' : meal.status === 'skipped' ? 'skipped' : 'upcoming')}
-                  </Text>
                 </View>
               </View>
             </View>
+
           </TouchableOpacity>
         ))}
 
