@@ -80,7 +80,7 @@ export default function IndexScreen() {
                         style={[welcomeStyles.logo, { width: '80%', height: '80%', aspectRatio: undefined }]}
                         resizeMode="contain"
                     />
-                    <Text style={welcomeStyles.taglineText}>Powered by AI, Validated by Nutritionist</Text>
+                    <Text style={welcomeStyles.taglineText}>Powered by AI • Guided by Nutritionists</Text>
                 </View>
 
                 {/* Get Started Button */}
