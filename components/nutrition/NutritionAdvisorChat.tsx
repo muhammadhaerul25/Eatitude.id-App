@@ -287,7 +287,7 @@ export function NutritionAdvisorChat({
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <ActivityIndicator size="small" color="#10b981" />
                             <Text style={{ marginLeft: 8, color: '#6b7280' }}>
-                                Analyzing your nutrition data...
+                                Analisis data nutrisi harianmu...
                             </Text>
                         </View>
                     </View>

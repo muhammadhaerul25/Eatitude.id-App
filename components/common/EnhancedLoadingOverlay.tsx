@@ -25,11 +25,11 @@ export const EnhancedLoadingOverlay: React.FC<EnhancedLoadingOverlayProps> = ({
     subtitle,
     estimatedDuration = 120,
     progressMessages = [
-        "Analyzing your profile...",
-        "Generating personalized recommendations...",
-        "Calculating nutritional requirements...",
-        "Creating your meal plan structure...",
-        "Finalizing your personal plan..."
+        "Analisis profil Anda...",
+        "Menyusun rekomendasi personal...",
+        "Menghitung kebutuhan nutrisi...",
+        "Membuat jadwal dan rencana makan Anda...",
+        "Menyelesaikan rencana nutrisi personal Anda..."
     ]
 }) => {
     const spinValue = useRef(new Animated.Value(0)).current;

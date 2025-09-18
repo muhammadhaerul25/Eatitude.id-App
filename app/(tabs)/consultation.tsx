@@ -58,14 +58,14 @@ export default function ConsultScreen() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Hello! I\'m your AI nutrition assistant. I can provide personalized nutrition advice based on your profile and meal plans. How can I help you today?',
+      text: 'Halo! Saya NutriAdvisor Bot, asisten gizi Anda. Saya siap membantu memberikan saran nutrisi yang sesuai dengan kebutuhan dan gaya hidup Anda. Mau mulai dengan profil kesehatan atau rencana makan hari ini?',
       isUser: false,
       timestamp: new Date(),
       generatedBy: 'ai',
     },
     {
       id: '2',
-      text: '⚠️ Please note: AI analysis may take 5-10 minutes to complete as our system processes your data thoroughly. Thank you for your patience!',
+      text: '⚠️ Harap dicatat: Analisis AI mungkin memerlukan waktu 5-10 menit untuk diselesaikan karena sistem kami memproses data Anda secara menyeluruh. Terima kasih atas kesabaran Anda!',
       isUser: false,
       timestamp: new Date(),
       generatedBy: 'ai',
@@ -470,7 +470,7 @@ export default function ConsultScreen() {
     // Add a quick analysis request message
     const analysisMessage: Message = {
       id: Date.now().toString(),
-      text: 'Please provide me with a comprehensive nutrition analysis based on my current profile and meal plan.',
+      text: 'Tolong berikan saya analisis gizi yang komprehensif berdasarkan profil saya saat ini dan rencana makan saya',
       isUser: true,
       timestamp: new Date(),
     };
@@ -819,7 +819,7 @@ export default function ConsultScreen() {
                 fontWeight: 'bold',
                 color: '#1F2937',
                 marginLeft: 8,
-              }}>AI Nutrition Assistant</Text>
+              }}>NutriAdvisor Bot</Text>
             </View>
 
             <TouchableOpacity
@@ -897,7 +897,7 @@ export default function ConsultScreen() {
                   <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8 }}>
                     <ActivityIndicator size="small" color="#10B981" />
                     <Text style={[consultationTabStyles.messageText, { marginLeft: 8, fontStyle: 'italic' }]}>
-                      Analyzing your nutrition data with AI... This may take a few minutes.
+                      Analisis data nutrisi harianmu... Ini mungkin memerlukan beberapa menit.
                     </Text>
                   </View>
 

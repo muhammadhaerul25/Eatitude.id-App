@@ -96,7 +96,7 @@ export const OrderPage: React.FC<OrderPageProps> = ({ visible, onClose, foodItem
                         fontWeight: '600',
                         color: '#1F2937'
                     }}>
-                        Order Food
+                        Order Makanan
                     </Text>
                     <TouchableOpacity onPress={onClose}>
                         <X size={24} color="#6B7280" />
