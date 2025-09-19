@@ -914,7 +914,7 @@ export default function ConsultScreen() {
                 style={consultationTabStyles.textInput}
                 value={inputText}
                 onChangeText={setInputText}
-                placeholder="Ask about nutrition..."
+                placeholder=""
                 multiline
                 maxLength={500}
                 editable={!isGeneratingAdvice}
