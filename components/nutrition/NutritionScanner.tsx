@@ -322,7 +322,7 @@ export default function NutritionScanner({ visible, onClose, onSaveFood }: Nutri
                             <X size={24} color="#111827" />
                         </TouchableOpacity>
                         <View>
-                            <Text style={nutritionScannerStyles.headerTitle}>Nutri Scanner & Calculator</Text>
+                            <Text style={nutritionScannerStyles.headerTitle}>Nutri Scanner</Text>
                             <Text style={nutritionScannerStyles.headerSubtitle}>Powered by NutriAdvisor AI</Text>
                         </View>
                     </View>
